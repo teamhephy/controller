@@ -1107,6 +1107,7 @@ class App(UuidAuditedModel):
             'deployment_revision_history_limit': deployment_history,
             'release_summary': release.summary,
             'pod_termination_grace_period_seconds': pod_termination_grace_period_seconds,
+            'pod_termination_grace_period_each': config.termination_grace_period,
             'image_pull_secret_name': image_pull_secret_name,
             'image_pull_policy': image_pull_policy
         }

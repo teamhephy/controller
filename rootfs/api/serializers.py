@@ -26,6 +26,7 @@ CPUSHARE_MATCH = re.compile(
     r'^(?P<cpu>(([-+]?[0-9]*\.?[0-9]+[m]?)(/([-+]?[0-9]*\.?[0-9]+[m]?))?))$')
 TAGVAL_MATCH = re.compile(r'^(?:[a-zA-Z\d][-\.\w]{0,61})?[a-zA-Z\d]$')
 CONFIGKEY_MATCH = re.compile(r'^[a-z_]+[a-z0-9_]*$', re.IGNORECASE)
+TERMINATION_GRACE_PERIOD_MATCH = re.compile(r'^[0-9]*$')
 PROBE_SCHEMA = {
     "$schema": "http://json-schema.org/schema#",
 
@@ -218,6 +219,7 @@ class ConfigSerializer(serializers.ModelSerializer):
     registry = JSONFieldSerializer(required=False, binary=True)
     healthcheck = JSONFieldSerializer(convert_to_str=False, required=False, binary=True)
     routable = serializers.BooleanField(required=False)
+    termination_grace_period = JSONFieldSerializer(required=False, binary=True)
 
     class Meta:
         """Metadata options for a :class:`ConfigSerializer`."""
@@ -369,6 +371,21 @@ class ConfigSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     'livenessProbe successThreshold can only be 1'
                 )
+
+        return data
+
+    def validate_termination_grace_period(self, data):
+        for key, value in data.items():
+            if value is None:  # use NoneType to unset an item
+                continue
+
+            if not re.match(PROCTYPE_MATCH, key):
+                raise serializers.ValidationError(PROCTYPE_MISMATCH_MSG)
+
+            timeout = re.match(TERMINATION_GRACE_PERIOD_MATCH, value)
+            if not timeout:
+                raise serializers.ValidationError(
+                    "Termination Grace Period format: <value>, where value must be a numeric")
 
         return data
 
