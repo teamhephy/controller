@@ -301,6 +301,21 @@ class ConfigSerializer(serializers.ModelSerializer):
 
         return data
 
+    def validate_termination_grace_period(self, data):
+        for key, value in data.items():
+            if value is None:  # use NoneType to unset an item
+                continue
+
+            if not re.match(PROCTYPE_MATCH, key):
+                raise serializers.ValidationError(PROCTYPE_MISMATCH_MSG)
+
+            timeout = re.match(TERMINATION_GRACE_PERIOD_MATCH, value)
+            if not timeout:
+                raise serializers.ValidationError(
+                    "Termination Grace Period format: <value>, where value must be a numeric")
+
+        return data
+
     def validate_tags(self, data):
         for key, value in data.items():
             if value is None:  # use NoneType to unset an item
@@ -373,22 +388,6 @@ class ConfigSerializer(serializers.ModelSerializer):
                 )
 
         return data
-
-    def validate_termination_grace_period(self, data):
-        for key, value in data.items():
-            if value is None:  # use NoneType to unset an item
-                continue
-
-            if not re.match(PROCTYPE_MATCH, key):
-                raise serializers.ValidationError(PROCTYPE_MISMATCH_MSG)
-
-            timeout = re.match(TERMINATION_GRACE_PERIOD_MATCH, value)
-            if not timeout:
-                raise serializers.ValidationError(
-                    "Termination Grace Period format: <value>, where value must be a numeric")
-
-        return data
-
 
 class ReleaseSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Release` model."""
