@@ -261,7 +261,7 @@ class Pod(Resource):
         timeout_global = kwargs.get('pod_termination_grace_period_seconds', 30)
         timeout_local = kwargs.get("pod_termination_grace_period_each", {}).get(app_type)
 
-        return timeout_global if timeout_local is None else timeout_local
+        return timeout_global if timeout_local is None else int(timeout_local)
 
     def _format_memory(self, mem):
         """ Format memory limit value """

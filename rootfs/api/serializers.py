@@ -309,7 +309,7 @@ class ConfigSerializer(serializers.ModelSerializer):
             if not re.match(PROCTYPE_MATCH, key):
                 raise serializers.ValidationError(PROCTYPE_MISMATCH_MSG)
 
-            timeout = re.match(TERMINATION_GRACE_PERIOD_MATCH, value)
+            timeout = re.match(TERMINATION_GRACE_PERIOD_MATCH, str(value))
             if not timeout:
                 raise serializers.ValidationError(
                     "Termination Grace Period format: <value>, where value must be a numeric")
