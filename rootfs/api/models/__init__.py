@@ -142,6 +142,7 @@ from .build import Build  # noqa
 from .certificate import Certificate, validate_certificate  # noqa
 from .config import Config  # noqa
 from .domain import Domain  # noqa
+from .service import Service  # noqa
 from .key import Key, validate_base64  # noqa
 from .release import Release  # noqa
 from .tls import TLS  # noqa
