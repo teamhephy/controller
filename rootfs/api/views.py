@@ -391,6 +391,8 @@ class ServiceViewSet(AppResourceViewSet):
             else:
                 svc.path_pattern = pp
                 svc.save()
+        else:
+            svc = Service.create(owner=self.owner, app=self.app, procfile_type=pft, path_pattern=pp)
         return Response(status=status.HTTP_201_CREATED)
 
     def delete(self, request, **kwargs):
