@@ -20,7 +20,7 @@ class Service(AuditedModel):
         ordering = ['-created']
 
     def __str__(self):
-        return "{}-{}".format(self.app.id, str(self.procfile_type))
+        return self._svc_name()
 
     def as_dict(self):
         return {
@@ -30,9 +30,8 @@ class Service(AuditedModel):
 
     def create(self, *args, **kwargs):  # noqa
         # create required minimum service in k8s for the application
-
-        namespace = self.app.id
-        svc_name = "{}-{}".format(namespace, self.procfile_type)
+        namespace = self._namespace()
+        svc_name = self._svc_name()
         self.log('creating Service: {}'.format(svc_name), level=logging.DEBUG)
         try:
             try:
@@ -54,8 +53,8 @@ class Service(AuditedModel):
         return service
 
     def delete(self, *args, **kwargs):
-        namespace = self.app.id
-        svc_name = "{}-{}".format(namespace, self.procfile_type)
+        namespace = self._namespace()
+        svc_name = self._svc_name()
         self.log('deleting Service: {}'.format(svc_name), level=logging.DEBUG)
         try:
             self._scheduler.svc.delete(namespace, svc_name)
@@ -77,10 +76,38 @@ class Service(AuditedModel):
         """
         logger.log(level, "[{}]: {}".format(self.id, message))
 
+    def maintenance_mode(self, mode):
+        """
+        Turn service maintenance mode on/off
+        """
+        namespace = self._namespace()
+        svc_name = self._svc_name()
+
+        try:
+            service = self._fetch_service_config(namespace, svc_name)
+        except (ServiceUnavailable, KubeException) as e:
+            # ignore non-existing services
+            return
+
+        old_service = service.copy()  # in case anything fails for rollback
+
+        try:
+            service['metadata']['annotations']['router.deis.io/maintenance'] = str(mode).lower()
+            self._scheduler.svc.update(namespace, svc_name, data=service)
+        except KubeException as e:
+            self._scheduler.svc.update(namespace, svc_name, data=old_service)
+            raise ServiceUnavailable(str(e)) from e
+
+    def _namespace(self):
+        return self.app.id
+
+    def _svc_name(self):
+        return "{}-{}".format(self.app.id, self.procfile_type)
+
     def _gather_settings(self):
         app_settings = self.app.appsettings_set.latest()
         return {
-            'domains': "{}-{}".format(self.app.id, self.procfile_type),
+            'domains': self._svc_name(),
             'maintenance': app_settings.maintenance,
             'routable': app_settings.routable,
             'proxyDomain': self.app.id,

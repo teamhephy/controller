@@ -22,6 +22,7 @@ from api.models import get_session
 from api.models import UuidAuditedModel, AlreadyExists, DeisException, ServiceUnavailable
 from api.models.config import Config
 from api.models.domain import Domain
+from api.models.service import Service
 from api.models.release import Release
 from api.models.tls import TLS
 from api.models.appsettings import AppSettings
@@ -891,6 +892,11 @@ class App(UuidAuditedModel):
         except KubeException as e:
             self._scheduler.svc.update(self.id, self.id, data=old_service)
             raise ServiceUnavailable(str(e)) from e
+
+        # set maintenance mode for services
+        for svc in self.service_set.all():
+            svc.maintenance_mode(mode)
+
 
     def routable(self, routable):
         """
