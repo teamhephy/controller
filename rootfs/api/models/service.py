@@ -1,7 +1,12 @@
+import logging
+
 from django.db import models
 from django.conf import settings
 
-from api.models import AuditedModel
+from api.models import AuditedModel, UuidAuditedModel, AlreadyExists, DeisException, ServiceUnavailable
+from scheduler import KubeException
+
+logger = logging.getLogger(__name__)
 
 class Service(AuditedModel):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
@@ -25,8 +30,9 @@ class Service(AuditedModel):
 
     def create(self, *args, **kwargs):  # noqa
         # create required minimum service in k8s for the application
+
         namespace = self.app.id
-        svc_name = "{}-{}".format(self.id, self.procfile_type)
+        svc_name = "{}-{}".format(namespace, self.procfile_type)
         self.log('creating Service: {}'.format(svc_name), level=logging.DEBUG)
         try:
             try:
@@ -42,12 +48,14 @@ class Service(AuditedModel):
 
     def save(self, *args, **kwargs):
         service = super(Service, self).save(*args, **kwargs)
+
         self.create()
+
         return service
 
     def delete(self, *args, **kwargs):
         namespace = self.app.id
-        svc_name = "{}-{}".format(self.id, self.procfile_type)
+        svc_name = "{}-{}".format(namespace, self.procfile_type)
         self.log('deleting Service: {}'.format(svc_name), level=logging.DEBUG)
         try:
             self._scheduler.svc.delete(namespace, svc_name)
@@ -58,6 +66,16 @@ class Service(AuditedModel):
 
         # Delete from DB
         return super(Service, self).delete(*args, **kwargs)
+
+    def log(self, message, level=logging.INFO):
+        """Logs a message in the context of this service.
+
+        This prefixes log messages with an application "tag" that the customized deis-logspout will
+        be on the lookout for.  When it's seen, the message-- usually an application event of some
+        sort like releasing or scaling, will be considered as "belonging" to the application
+        instead of the controller and will be handled accordingly.
+        """
+        logger.log(level, "[{}]: {}".format(self.id, message))
 
     def _gather_settings(self):
         app_settings = self.app.appsettings_set.latest()
