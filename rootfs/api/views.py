@@ -384,7 +384,8 @@ class ServiceViewSet(AppResourceViewSet):
     def create_or_update(self, request, **kwargs):
         pft = self.get_serializer().validate_procfile_type(request.data.get('procfile_type'))
         pp = self.get_serializer().validate_path_pattern(request.data.get('path_pattern'))
-        svc = self.get_app().service_set.filter(procfile_type=pft).first()
+        app = self.get_app()
+        svc = app.service_set.filter(procfile_type=pft).first()
         if svc:
             if svc.path_pattern == pp:
                 return Response(status=status.HTTP_204_NO_CONTENT)
@@ -392,7 +393,7 @@ class ServiceViewSet(AppResourceViewSet):
                 svc.path_pattern = pp
                 svc.save()
         else:
-            svc = Service.create(owner=self.owner, app=self.app, procfile_type=pft, path_pattern=pp)
+            svc = models.Service.objects.create(owner=app.owner, app=app, procfile_type=pft, path_pattern=pp)
         return Response(status=status.HTTP_201_CREATED)
 
     def delete(self, request, **kwargs):

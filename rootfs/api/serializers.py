@@ -483,8 +483,7 @@ class ServiceSerializer(serializers.ModelSerializer):
                 re.compile(pattern)
             except re.error as e:
                 raise serializers.ValidationError(
-                    "Service value should be valid regex (or set of regex split by comma), error: {}"\
-                    .format(e.message))
+                    "Service value should be valid regex (or set of regex split by comma)")
 
         return value
 
