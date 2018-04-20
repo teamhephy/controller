@@ -379,7 +379,7 @@ class ServiceViewSet(AppResourceViewSet):
     def list(self, *args, **kwargs):
         services = self.get_app().service_set.all()
         data = [ obj.as_dict() for obj in services ]
-        return Response(data, status=status.HTTP_200_OK)
+        return Response({"services": data}, status=status.HTTP_200_OK)
 
     def create_or_update(self, request, **kwargs):
         pft = self.get_serializer().validate_procfile_type(request.data.get('procfile_type'))

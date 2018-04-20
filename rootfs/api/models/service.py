@@ -41,15 +41,9 @@ class Service(AuditedModel):
         self._update_service(namespace, self.procfile_type, routable, annotations)
 
     def save(self, *args, **kwargs):
-        namespace = self.app.id
-        svc_name = "{}-{}".format(self.id, self.procfile_type)
-        self.log('updating Service: {}'.format(svc_name), level=logging.DEBUG)
-        annotations = self._gather_settings()
-        routable = annotations.pop('routable')
-        self._update_service(namespace, self.procfile_type, routable, annotations)
-
-        # Save to DB
-        return super(Service, self).save(*args, **kwargs)
+        service = super(Service, self).save(*args, **kwargs)
+        self.create()
+        return service
 
     def delete(self, *args, **kwargs):
         namespace = self.app.id
@@ -68,7 +62,7 @@ class Service(AuditedModel):
     def _gather_settings(self):
         app_settings = self.app.appsettings_set.latest()
         return {
-            'domains': "{}-{}".format(self.app.id, self.procfile_type)
+            'domains': "{}-{}".format(self.app.id, self.procfile_type),
             'maintenance': app_settings.maintenance,
             'routable': app_settings.routable,
             'proxyDomain': self.app.id,
