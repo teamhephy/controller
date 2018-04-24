@@ -454,6 +454,7 @@ class DomainSerializer(serializers.ModelSerializer):
 
         return aceValue
 
+
 class ServiceSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Service` model."""
 
@@ -486,6 +487,7 @@ class ServiceSerializer(serializers.ModelSerializer):
                     "Service value should be valid regex (or set of regex split by comma)")
 
         return value
+
 
 class CertificateSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Cert` model."""

@@ -371,6 +371,7 @@ class DomainViewSet(AppResourceViewSet):
             ace_domain = domain
         return get_object_or_404(qs, domain=ace_domain)
 
+
 class ServiceViewSet(AppResourceViewSet):
     """A viewset for interacting with Service objects."""
     model = models.Service
@@ -378,7 +379,7 @@ class ServiceViewSet(AppResourceViewSet):
 
     def list(self, *args, **kwargs):
         services = self.get_app().service_set.all()
-        data = [ obj.as_dict() for obj in services ]
+        data = [obj.as_dict() for obj in services]
         return Response({"services": data}, status=status.HTTP_200_OK)
 
     def create_or_update(self, request, **kwargs):
@@ -393,7 +394,9 @@ class ServiceViewSet(AppResourceViewSet):
                 svc.path_pattern = pp
                 svc.save()
         else:
-            svc = models.Service.objects.create(owner=app.owner, app=app, procfile_type=pft, path_pattern=pp)
+            svc = models.Service.objects.create(owner=app.owner, app=app,
+                                                procfile_type=pft,
+                                                path_pattern=pp)
         return Response(status=status.HTTP_201_CREATED)
 
     def delete(self, request, **kwargs):
@@ -402,6 +405,7 @@ class ServiceViewSet(AppResourceViewSet):
         svc = get_object_or_404(qs, procfile_type=pft)
         svc.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class CertificateViewSet(BaseDeisViewSet):
     """A viewset for interacting with Certificate objects."""

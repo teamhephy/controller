@@ -3,10 +3,11 @@ import logging
 from django.db import models
 from django.conf import settings
 
-from api.models import AuditedModel, UuidAuditedModel, AlreadyExists, DeisException, ServiceUnavailable
+from api.models import AuditedModel, ServiceUnavailable
 from scheduler import KubeException
 
 logger = logging.getLogger(__name__)
+
 
 class Service(AuditedModel):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
@@ -61,7 +62,8 @@ class Service(AuditedModel):
         except KubeException:
             # swallow exception
             # raise ServiceUnavailable('Kubernetes service could not be deleted') from e
-            self.log('Kubernetes service cannot be deleted: {}'.format(svc_name), level=logging.ERROR)
+            self.log('Kubernetes service cannot be deleted: {}'.format(svc_name),
+                     level=logging.ERROR)
 
         # Delete from DB
         return super(Service, self).delete(*args, **kwargs)
