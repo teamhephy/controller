@@ -24,7 +24,6 @@ class Config(UuidAuditedModel):
     tags = JSONField(default={}, blank=True)
     registry = JSONField(default={}, blank=True)
     healthcheck = JSONField(default={}, blank=True)
-    termination_grace_period = JSONField(default={}, blank=True)
 
     class Meta:
         get_latest_by = 'created'
