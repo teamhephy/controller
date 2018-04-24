@@ -427,7 +427,6 @@ class Release(UuidAuditedModel):
                     changes = 'changed limits for '+', '.join(changes)
                     self.summary += "{} {}".format(self.config.owner, changes)
 
-<<<<<<< HEAD
                 # if the lifecycle_post_start hooks changed, log the dict diff
                 changes = []
                 old_lifecycle_post_start = old_config.lifecycle_post_start if old_config else {}

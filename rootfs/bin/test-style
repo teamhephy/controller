@@ -6,4 +6,4 @@
 # fail hard and fast even on pipelines
 set -eou pipefail
 
-flake8 --show-source --max-line-length=128
+flake8 --show-source
