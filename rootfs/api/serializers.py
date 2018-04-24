@@ -389,6 +389,7 @@ class ConfigSerializer(serializers.ModelSerializer):
 
         return data
 
+
 class ReleaseSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Release` model."""
 
