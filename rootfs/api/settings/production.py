@@ -27,8 +27,6 @@ SILENCED_SYSTEM_CHECKS = [
     'security.W008'
 ]
 
-CONN_MAX_AGE = 60 * 3
-
 # SECURITY: change this to allowed fqdn's to prevent host poisioning attacks
 # https://docs.djangoproject.com/en/1.11/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = ['*']
@@ -368,7 +366,7 @@ DATABASES = {
         'HOST': os.environ.get('DEIS_DATABASE_SERVICE_HOST', ''),
         'PORT': os.environ.get('DEIS_DATABASE_SERVICE_PORT', 5432),
         # https://docs.djangoproject.com/en/1.11/ref/databases/#persistent-connections
-        'CONN_MAX_AGE': 600,
+        'CONN_MAX_AGE': os.environ.get('CONN_MAX_AGE', 600),
     }
 }
 
