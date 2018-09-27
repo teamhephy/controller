@@ -459,6 +459,15 @@ class Release(UuidAuditedModel):
                 if changes:
                     if self.summary:
                         self.summary += ' and '
+
+                # if the timeouts changed, log the dict diff
+                changes = []
+                old_timeout = old_config.termination_grace_period if old_config else {}
+                diff = dict_diff(self.config.termination_grace_period, old_timeout)
+                if diff.get('added') or diff.get('changed') or diff.get('deleted'):
+                    changes.append('termination_grace_period')
+                if changes:
+                    changes = 'changed timeouts for '+', '.join(changes)
                     self.summary += "{} {}".format(self.config.owner, changes)
 
                 # if the tags changed, log the dict diff

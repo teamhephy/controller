@@ -130,7 +130,7 @@ class Pod(Resource):
         spec['nodeSelector'] = kwargs.get('tags', {})
 
         # How long until a pod is forcefully terminated. 30 is kubernetes default
-        spec['terminationGracePeriodSeconds'] = kwargs.get('pod_termination_grace_period_seconds', 30)  # noqa
+        spec['terminationGracePeriodSeconds'] = self._get_termination_grace_period(kwargs)  # noqa
 
         # Check if it is a slug builder image.
         if build_type == "buildpack":
@@ -254,6 +254,14 @@ class Pod(Resource):
 
             if resources:
                 container["resources"] = dict(resources)
+
+    def _get_termination_grace_period(self, kwargs):
+        """ return termination grace period """
+        app_type = kwargs.get("app_type")
+        timeout_global = kwargs.get('pod_termination_grace_period_seconds', 30)
+        timeout_local = kwargs.get("pod_termination_grace_period_each", {}).get(app_type)
+
+        return timeout_global if timeout_local is None else int(timeout_local)
 
     def _format_memory(self, mem):
         """ Format memory limit value """
