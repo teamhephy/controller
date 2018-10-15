@@ -472,6 +472,40 @@ class DomainSerializer(serializers.ModelSerializer):
         return aceValue
 
 
+class ServiceSerializer(serializers.ModelSerializer):
+    """Serialize a :class:`~api.models.Service` model."""
+
+    app = serializers.SlugRelatedField(slug_field='id', queryset=models.App.objects.all())
+    owner = serializers.ReadOnlyField(source='owner.username')
+    procfile_type = serializers.CharField(allow_blank=False, allow_null=False, required=True)
+    path_pattern = serializers.CharField(allow_blank=False, allow_null=False, required=True)
+
+    class Meta:
+        """Metadata options for a :class:`ServiceSerializer`."""
+        model = models.Service
+        fields = ['owner', 'created', 'updated', 'app', 'procfile_type', 'path_pattern']
+        read_only_fields = ['uuid']
+
+    def validate_procfile_type(self, value):
+        if not re.match(PROCTYPE_MATCH, value):
+            raise serializers.ValidationError(PROCTYPE_MISMATCH_MSG)
+
+        return value
+
+    def validate_path_pattern(self, value):
+        for pattern in str(value).split(","):
+            if not pattern.strip():
+                raise serializers.ValidationError(
+                    "Service value should be valid regex (or set of regex split by comma)")
+            try:
+                re.compile(pattern)
+            except re.error as e:
+                raise serializers.ValidationError(
+                    "Service value should be valid regex (or set of regex split by comma)")
+
+        return value
+
+
 class CertificateSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Cert` model."""
 

@@ -50,6 +50,10 @@ urlpatterns = [
         views.DomainViewSet.as_view({'delete': 'destroy'})),
     url(r"^apps/(?P<id>{})/domains/?$".format(settings.APP_URL_REGEX),
         views.DomainViewSet.as_view({'post': 'create', 'get': 'list'})),
+    # application services
+    url(r"^apps/(?P<id>{})/services/?$".format(settings.APP_URL_REGEX),
+        views.ServiceViewSet.as_view({'post': 'create_or_update',
+                                     'get': 'list', 'delete': 'delete'})),
     # application actions
     url(r"^apps/(?P<id>{})/scale/?$".format(settings.APP_URL_REGEX),
         views.AppViewSet.as_view({'post': 'scale'})),

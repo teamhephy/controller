@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.shortcuts import get_object_or_404
 
-from api.models import Key, App, Domain, Certificate
+from api.models import Key, App, Domain, Certificate, Service
 from api.exceptions import DeisException, AlreadyExists
 
 
@@ -52,7 +52,7 @@ class Command(BaseCommand):
             except DeisException as error:
                 print('ERROR: Problem saving to model {} for {}'
                       'due to {}'.format(str(App.__name__), str(app), str(error)))
-        for model in (Key, Domain, Certificate):
+        for model in (Key, Domain, Certificate, Service):
             for obj in model.objects.all():
                 try:
                     obj.save()

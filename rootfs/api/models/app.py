@@ -892,6 +892,10 @@ class App(UuidAuditedModel):
             self._scheduler.svc.update(self.id, self.id, data=old_service)
             raise ServiceUnavailable(str(e)) from e
 
+        # set maintenance mode for services
+        for svc in self.service_set.all():
+            svc.maintenance_mode(mode)
+
     def routable(self, routable):
         """
         Turn on/off if an application is publically routable
