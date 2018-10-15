@@ -9,7 +9,7 @@ import jsonfield.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0026_release_exception'),
+        ('api', '0027_auto_20180424_1742'),
     ]
 
     operations = [
