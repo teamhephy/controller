@@ -2,7 +2,7 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  namespace: "deis"
+  namespace: "{{ .Release.Namespace }}"
   name: "controller-api-server-ingress-http"
   labels:
     app: "controller"
