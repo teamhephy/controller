@@ -60,7 +60,7 @@ global:
   #
   # Valid values are a number of seconds, or 0 to disable persistent connections.
   # Setting the value to "None" will ensure that connections are never timed out.
-  # - 0
+  # - 0 
   # - 600
   # - "None"
   # conn_max_age: 600
