@@ -25,6 +25,7 @@ class DeploymentsTest(TestCase):
             'image': 'quay.io/fake/image',
             'entrypoint': 'sh',
             'command': 'start',
+            'spec_annotations': kwargs.get('spec_annotations', {}),
         }
 
         deployment = self.scheduler.deployment.create(namespace, name, **kwargs)
@@ -45,6 +46,7 @@ class DeploymentsTest(TestCase):
             'image': 'quay.io/fake/image',
             'entrypoint': 'sh',
             'command': 'start',
+            'spec_annotations': kwargs.get('spec_annotations', {}),
         }
 
         deployment = self.scheduler.deployment.update(namespace, name, **kwargs)
