@@ -30,7 +30,7 @@ class Deployment(Resource):
 
         return response
 
-    def manifest(self, namespace, name, image, entrypoint, command, **kwargs):
+    def manifest(self, namespace, name, image, entrypoint, command, spec_annotations, **kwargs):
         replicas = kwargs.get('replicas', 0)
         batches = kwargs.get('deploy_batches', None)
         tags = kwargs.get('tags', {})
@@ -104,11 +104,14 @@ class Deployment(Resource):
         # pod manifest spec
         manifest['spec']['template'] = self.pod.manifest(namespace, name, image, **kwargs)
 
+        # set the old deployment spec annotations on this deployment
+        manifest['spec']['template']['metadata']['annotations'] = spec_annotations
+
         return manifest
 
-    def create(self, namespace, name, image, entrypoint, command, **kwargs):
+    def create(self, namespace, name, image, entrypoint, command, spec_annotations, **kwargs):
         manifest = self.manifest(namespace, name, image,
-                                 entrypoint, command, **kwargs)
+                                 entrypoint, command, spec_annotations, **kwargs)
 
         url = self.api("/namespaces/{}/deployments", namespace)
         response = self.http_post(url, json=manifest)
@@ -124,9 +127,9 @@ class Deployment(Resource):
 
         return response
 
-    def update(self, namespace, name, image, entrypoint, command, **kwargs):
+    def update(self, namespace, name, image, entrypoint, command, spec_annotations, **kwargs):
         manifest = self.manifest(namespace, name, image,
-                                 entrypoint, command, **kwargs)
+                                 entrypoint, command, spec_annotations, **kwargs)
 
         url = self.api("/namespaces/{}/deployments/{}", namespace, name)
         response = self.http_put(url, json=manifest)
