@@ -232,6 +232,7 @@ class KubeHTTPClient(object):
         """Deploy Deployment depending on what's requested"""
         app_type = kwargs.get('app_type')
         version = kwargs.get('version')
+        spec_annotations = {}
 
         # If an RC already exists then stop processing of the deploy
         try:
@@ -255,19 +256,24 @@ class KubeHTTPClient(object):
             }
             # this depends on the deployment object having the latest information
             deployment = self.deployment.get(namespace, name).json()
+            # a hack to persist the spec annotations on the deployment object to next release
+            # instantiate spec_annotations and set to blank to avoid errors
+            if 'annotations' in deployment['spec']['template']['metadata'].keys():
+                old_spec_annotations = deployment['spec']['template']['metadata']['annotations']
+                spec_annotations = old_spec_annotations
             if deployment['spec']['template']['metadata']['labels'] == labels:
                 self.log(namespace, 'Deployment {} with release {} already exists. Stopping deploy'.format(name, version))  # noqa
                 return
         except KubeException:
             # create the initial deployment object (and the first revision)
             self.deployment.create(
-                namespace, name, image, entrypoint, command, **kwargs
+                namespace, name, image, entrypoint, command, spec_annotations, **kwargs
             )
         else:
             try:
                 # kick off a new revision of the deployment
                 self.deployment.update(
-                    namespace, name, image, entrypoint, command, **kwargs
+                    namespace, name, image, entrypoint, command, spec_annotations, **kwargs
                 )
             except KubeException as e:
                 raise KubeException(
@@ -283,7 +289,10 @@ class KubeHTTPClient(object):
             if e.response.status_code == 404:
                 # create missing deployment - deleted if it fails
                 try:
-                    self.deployment.create(namespace, name, image, entrypoint, command, **kwargs)
+                    spec_annotations = {}
+                    self.deployment.create(
+                        namespace, name, image, entrypoint, command, spec_annotations, **kwargs
+                    )
                 except KubeException:
                     # see if the deployment got created
                     try:

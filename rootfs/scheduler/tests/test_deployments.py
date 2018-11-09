@@ -25,6 +25,7 @@ class DeploymentsTest(TestCase):
             'image': 'quay.io/fake/image',
             'entrypoint': 'sh',
             'command': 'start',
+            'spec_annotations': kwargs.get('spec_annotations', {}),
         }
 
         deployment = self.scheduler.deployment.create(namespace, name, **kwargs)
@@ -45,6 +46,7 @@ class DeploymentsTest(TestCase):
             'image': 'quay.io/fake/image',
             'entrypoint': 'sh',
             'command': 'start',
+            'spec_annotations': kwargs.get('spec_annotations', {}),
         }
 
         deployment = self.scheduler.deployment.update(namespace, name, **kwargs)
@@ -239,6 +241,51 @@ class DeploymentsTest(TestCase):
             },
             data['metadata']['labels'],
             data
+        )
+
+    def test_get_deployment_annotations(self):
+        """
+        Look at the annotations on the Deployment object
+        """
+        # test success
+        kwargs = {
+            'spec_annotations': {'iam.amazonaws.com/role': 'role-arn'},
+        }
+        deployment = self.create(**kwargs)
+        data = self.scheduler.deployment.get(self.namespace, deployment).json()
+
+        self.assertDictContainsSubset(
+            {
+                'iam.amazonaws.com/role': 'role-arn'
+            },
+            data['spec']['template']['metadata']['annotations']
+        )
+
+    def test_get_pod_annotations(self):
+        """
+        Look at the Pod annotations that the Deployment created
+        """
+        kwargs = {
+            'spec_annotations': {
+                'iam.amazonaws.com/role': 'role-arn-pods',
+                'nginx.ingress.kubernetes.io/app-root': '/rootfs',
+                'sidecar.istio.io/inject': 'true'
+            },
+        }
+        deployment = self.create(**kwargs)
+        data = self.scheduler.deployment.get(self.namespace, deployment).json()
+        self.assertEqual(data['kind'], 'Deployment')
+        self.assertEqual(data['metadata']['name'], deployment)
+
+        labels = {'app': self.namespace, 'version': 'v99', 'type': 'web'}
+        pods = self.scheduler.pod.get(self.namespace, labels=labels).json()
+        self.assertDictEqual(
+            {
+                'iam.amazonaws.com/role': 'role-arn-pods',
+                'nginx.ingress.kubernetes.io/app-root': '/rootfs',
+                'sidecar.istio.io/inject': 'true'
+            },
+            pods['items'][0]['metadata']['annotations']
         )
 
     def test_check_for_failed_events(self):
