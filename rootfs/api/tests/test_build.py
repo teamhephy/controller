@@ -23,6 +23,7 @@ import requests_mock
 @requests_mock.Mocker(real_http=True, adapter=adapter)
 @mock.patch('api.models.release.publish_release', lambda *args: None)
 @mock.patch('api.models.release.docker_get_port', mock_port)
+@mock.patch('api.models.release.docker_check_access', lambda *args: None)
 class BuildTest(DeisTransactionTestCase):
 
     """Tests build notification from build system"""
@@ -590,6 +591,44 @@ class BuildTest(DeisTransactionTestCase):
         body = {'registry': json.dumps({'username': 'bob', 'password': 'zoomzoom'})}
         response = self.client.post(url, body)
         self.assertEqual(response.status_code, 201, response.data)
+
+    def test_build_image_no_registry_password(self, mock_requests):
+        """build with image from private registry, but no password given"""
+        app_id = self.create_app()
+
+        # post an image as a build
+        with mock.patch('api.models.release.docker_check_access') as mock_check_access:
+            mock_check_access.side_effect = Exception('no no no')  # let the image access fail
+            url = "/v2/apps/{app_id}/builds".format(**locals())
+            image = 'autotest/example'
+            response = self.client.post(url, {'image': image})
+            self.assertEqual(response.status_code, 400, response.data)
+
+    def test_build_image_wrong_registry_password(self, mock_requests):
+        """build with image from private registry, but wrong password given"""
+        app_id = self.create_app()
+
+        # post an image as a build using registry hostname
+        url = "/v2/apps/{app_id}/builds".format(**locals())
+        image = 'autotest/example'
+        response = self.client.post(url, {'image': image})
+        self.assertEqual(response.status_code, 201, response.data)
+
+        # add the required PORT information
+        url = '/v2/apps/{app_id}/config'.format(**locals())
+        body = {'values': json.dumps({'PORT': '80'})}
+        response = self.client.post(url, body)
+        self.assertEqual(response.status_code, 201, response.data)
+
+        # set some registry information
+        with mock.patch('api.models.release.docker_check_access') as mock_check_access:
+            mock_check_access.side_effect = Exception('no no no')  # let the image access fail
+            url = '/v2/apps/{app_id}/config'.format(**locals())
+            body = {'registry': json.dumps({'username': 'bob', 'password': 'zoomzoom'})}
+            response = self.client.post(url, body)
+            self.assertEqual(response.status_code, 400, response.data)
+            mock_check_access.assert_called_with(
+                image, {'username': 'bob', 'password': 'zoomzoom', 'email': 'autotest@deis.io'})
 
     def test_build_image_in_registry_with_auth_no_port(self, mock_requests):
         """add authentication to the build but with no PORT config"""

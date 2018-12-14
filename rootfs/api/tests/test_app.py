@@ -35,6 +35,7 @@ def _mock_run(*args, **kwargs):
 @requests_mock.Mocker(real_http=True, adapter=adapter)
 @mock.patch('api.models.release.publish_release', lambda *args: None)
 @mock.patch('api.models.release.docker_get_port', mock_port)
+@mock.patch('api.models.release.docker_check_access', lambda *args: None)
 class AppTest(DeisTestCase):
     """Tests creation of applications"""
 
