@@ -322,7 +322,7 @@ class PodTest(DeisTransactionTestCase):
             self.assertIn(pod['type'], ['web', 'worker'])
             self.assertEqual(pod['release'], 'v2')
             # pod name is auto generated so use regex
-            self.assertRegex(pod['name'], app_id + '-(worker|web)-[0-9]{8,10}-[a-z0-9]{5}')
+            self.assertRegex(pod['name'], app_id + '-(worker|web)-[0-9]{7,10}-[a-z0-9]{5}')
 
     def test_pod_command_format(self, mock_requests):
         # regression test for https://github.com/deisthree/deis/pull/1285
