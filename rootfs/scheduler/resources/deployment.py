@@ -1,13 +1,22 @@
-from datetime import datetime, timedelta
 import json
 import time
+from datetime import datetime, timedelta
+
+from packaging.version import parse
+
 from scheduler.resources import Resource
 from scheduler.exceptions import KubeException, KubeHTTPException
 
 
 class Deployment(Resource):
     api_prefix = 'apis'
-    api_version = 'extensions/v1beta1'
+
+    @property
+    def api_version(self):
+        if self.version() >= parse("1.9.0"):
+            return 'apps/v1'
+
+        return 'extensions/v1beta1'
 
     def get(self, namespace, name=None, **kwargs):
         """
@@ -43,7 +52,7 @@ class Deployment(Resource):
 
         manifest = {
             'kind': 'Deployment',
-            'apiVersion': 'extensions/v1beta1',
+            'apiVersion': self.api_version,
             'metadata': {
                 'name': name,
                 'labels': labels,
