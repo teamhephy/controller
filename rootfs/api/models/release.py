@@ -3,7 +3,7 @@ import logging
 from django.conf import settings
 from django.db import models
 
-from registry import publish_release, get_port as docker_get_port, RegistryException
+from registry import publish_release, get_port as docker_get_port, check_access as docker_check_access, RegistryException # noqa
 from api.utils import dict_diff
 from api.models import UuidAuditedModel
 from api.exceptions import DeisException, AlreadyExists
@@ -135,6 +135,13 @@ class Release(UuidAuditedModel):
         # if build is source based then it was pushed into the deis registry
         deis_registry = bool(self.build.source_based)
         publish_release(source_image, self.image, deis_registry, self.get_registry_auth())
+
+    def check_image_access(self):
+        try:
+            creds = self.get_registry_auth()
+            docker_check_access(self.image, creds)
+        except Exception as e:
+            raise DeisException(str(e)) from e
 
     def get_port(self):
         """

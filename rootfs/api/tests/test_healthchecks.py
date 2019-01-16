@@ -13,6 +13,7 @@ from api.tests import adapter, mock_port, DeisTransactionTestCase
 @requests_mock.Mocker(real_http=True, adapter=adapter)
 @mock.patch('api.models.release.publish_release', lambda *args: None)
 @mock.patch('api.models.release.docker_get_port', mock_port)
+@mock.patch('api.models.release.docker_check_access', lambda *args: None)
 class TestHealthchecks(DeisTransactionTestCase):
     """Tests setting and updating config values"""
 

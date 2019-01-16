@@ -1,5 +1,6 @@
 import json
 import requests_mock
+from unittest import mock
 
 from django.core.cache import cache
 from django.contrib.auth.models import User
@@ -136,7 +137,11 @@ class TestRegistry(DeisTransactionTestCase):
         self.assertEqual(response.data['registry']['password'], 's3cur3pw1')
 
         # post a new build
-        url = "/v2/apps/{app_id}/builds".format(**locals())
-        body = {'image': 'autotest/example'}
-        response = self.client.post(url, body)
-        self.assertEqual(response.status_code, 201, response.data)
+        with mock.patch('api.models.release.docker_check_access') as mock_check_access:
+            url = "/v2/apps/{app_id}/builds".format(**locals())
+            body = {'image': 'autotest/example'}
+            response = self.client.post(url, body)
+            self.assertEqual(response.status_code, 201, response.data)
+            mock_check_access.assert_called_with(
+                'autotest/example',
+                {'password': 's3cur3pw1', 'username': 'bob', 'email': 'autotest@deis.io'})
