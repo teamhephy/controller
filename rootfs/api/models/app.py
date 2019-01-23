@@ -520,14 +520,15 @@ class App(UuidAuditedModel):
         image = settings.SLUGRUNNER_IMAGE if release.build.type == 'buildpack' else release.image
 
         try:
-            # check access to the image, so users can't exploit the k8s image cache
-            # to gain access to other users' images
-            release.check_image_access()
             # create the application config in k8s (secret in this case) for all deploy objects
             self.set_application_config(release)
             # only buildpack apps need access to object storage
+            # only docker apps need check access to the image, so users can't exploit the k8s
+            # image cache to gain access to other users' images
             if release.build.type == 'buildpack':
                 self.create_object_store_secret()
+            else:
+                release.check_image_access()
 
             # gather all proc types to be deployed
             tasks = [
