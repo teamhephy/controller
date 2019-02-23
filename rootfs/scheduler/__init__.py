@@ -86,6 +86,12 @@ class KubeHTTPClient(object):
         data = response.json()
         return Version('{}.{}'.format(data['major'], data['minor']))
 
+    def apis(self):
+        """Get APIs: V1APIGroupList get_api_versions()"""
+        response = self.http_get('/apis')
+        data = response.json()
+        return data
+
     @staticmethod
     def parse_date(date):
         return datetime.strptime(date, KubeHTTPClient.DATETIME_FORMAT)
