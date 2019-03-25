@@ -216,8 +216,6 @@ class Release(UuidAuditedModel):
             'email': self.owner.email
         }
 
-
-
     def previous(self):
         """
         Return the previous Release to this one.
