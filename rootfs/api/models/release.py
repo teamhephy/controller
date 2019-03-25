@@ -1,4 +1,6 @@
 import logging
+import boto3
+import base64
 
 from django.conf import settings
 from django.db import models
@@ -193,6 +195,9 @@ class Release(UuidAuditedModel):
         auth = None
         registry = self.config.registry
         if registry.get('username', None):
+            if registry.get('username', None) == 'aws-ecr':
+                return self.get_registry_ecr_auth()
+
             auth = {
                 'username': registry.get('username', None),
                 'password': registry.get('password', None),
@@ -200,6 +205,18 @@ class Release(UuidAuditedModel):
             }
 
         return auth
+
+    def get_registry_ecr_auth(self):
+        ecr_client = boto3.client('ecr', region_name='us-east-1')
+        token = ecr_client.get_authorization_token()
+        username, password = base64.b64decode(token['authorizationData'][0]['authorizationToken']).decode().split(':')
+        return {
+            'username': username,
+            'password': password,
+            'email': self.owner.email
+        }
+
+
 
     def previous(self):
         """
