@@ -209,7 +209,9 @@ class Release(UuidAuditedModel):
     def get_registry_ecr_auth(self):
         ecr_client = boto3.client('ecr', region_name='us-east-1')
         token = ecr_client.get_authorization_token()
-        username, password = base64.b64decode(token['authorizationData'][0]['authorizationToken']).decode().split(':')
+        auth_token = token['authorizationData'][0]['authorizationToken']
+        username, password = base64.b64decode(auth_token).decode().split(':')
+
         return {
             'username': username,
             'password': password,
