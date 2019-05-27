@@ -392,7 +392,8 @@ class PodTest(DeisTransactionTestCase):
         response = self.client.post(url, body)
         self.assertEqual(response.status_code, 400, response.data)
         self.assertEqual(response.data, {"detail": "Invalid scaling format: "
-                                         "['Must be greater than or equal to zero']"})
+                                         "[ErrorDetail(string='Must be greater "
+                                         "than or equal to zero', code='invalid')]"})
 
         # scale to something other than a number
         url = "/v2/apps/{app_id}/scale".format(**locals())
