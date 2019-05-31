@@ -524,10 +524,11 @@ class App(UuidAuditedModel):
             self.set_application_config(release)
             # only buildpack apps need access to object storage
             # only docker apps need check access to the image, so users can't exploit the k8s
+            # unless global ecr or gcr registry is in use
             # image cache to gain access to other users' images
             if release.build.type == 'buildpack':
                 self.create_object_store_secret()
-            else:
+            elif settings.REGISTRY_LOCATION !='ecr':
                 release.check_image_access()
 
             # gather all proc types to be deployed
