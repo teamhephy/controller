@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import json
 import time
+import re
 
 from packaging.version import parse
 
@@ -11,9 +12,13 @@ from scheduler.exceptions import KubeException, KubeHTTPException
 class Deployment(Resource):
     api_prefix = 'apis'
 
+    def __sanitized_version(self):
+        """Remove non-numerics and non-decimal from our k8s API version"""
+        return parse(re.sub("[^0-9\.]", '', str(self.version())))
+
     @property
     def api_version(self):
-        if self.version() >= parse("1.9.0"):
+        if self.__sanitized_version() >= parse("1.9.0"):
             return 'apps/v1'
 
         return 'extensions/v1beta1'
