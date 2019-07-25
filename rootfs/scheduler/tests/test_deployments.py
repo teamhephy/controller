@@ -76,12 +76,6 @@ class DeploymentsTest(TestCase):
         self.scheduler.scale(namespace, name, **kwargs)
         return name
 
-    def unsanitized_version(self):
-        return parse("1.9+")
-
-    def sanitized_version(self):
-        return parse("1.9")
-
     def test_deployment_api_version_1_9_and_up(self):
         expected = 'apps/v1'
         deployment = copy.copy(self.scheduler.deployment)
