@@ -3,6 +3,9 @@ Unit tests for the Deis scheduler module.
 
 Run the tests with './manage.py test scheduler'
 """
+from unittest import mock
+import copy
+from packaging.version import parse
 from scheduler import KubeHTTPException, KubeException
 from scheduler.tests import TestCase
 from scheduler.utils import generate_random_name
@@ -72,6 +75,47 @@ class DeploymentsTest(TestCase):
 
         self.scheduler.scale(namespace, name, **kwargs)
         return name
+
+    def unsanitized_version(self):
+        return parse("1.9+")
+
+    def sanitized_version(self):
+        return parse("1.9")
+
+    def test_deployment_api_version_1_9_and_up(self):
+        expected = 'apps/v1'
+        deployment = copy.copy(self.scheduler.deployment)
+
+        deployment.version = mock.MagicMock(return_value=parse("1.9+"))
+        self.assertEqual(expected, deployment.api_version, '1.9+ breaks')
+
+        deployment.version = mock.MagicMock(return_value=parse("1.9"))
+        self.assertEqual(expected, deployment.api_version, '1.9 breaks')
+
+    def test_deployment_api_version_1_8_and_lower(self):
+        expected = 'extensions/v1beta1'
+        deployment = copy.copy(self.scheduler.deployment)
+
+        deployment.version = mock.MagicMock(return_value=parse("1.8"))
+        self.assertEqual(expected, deployment.api_version, '1.8 breaks')
+
+        deployment.version = mock.MagicMock(return_value=parse("1.7"))
+        self.assertEqual(expected, deployment.api_version, '1.7 breaks')
+
+        deployment.version = mock.MagicMock(return_value=parse("1.6"))
+        self.assertEqual(expected, deployment.api_version, '1.6 breaks')
+
+        deployment.version = mock.MagicMock(return_value=parse("1.5"))
+        self.assertEqual(expected, deployment.api_version, '1.5 breaks')
+
+        deployment.version = mock.MagicMock(return_value=parse("1.4"))
+        self.assertEqual(expected, deployment.api_version, '1.4 breaks')
+
+        deployment.version = mock.MagicMock(return_value=parse("1.3"))
+        self.assertEqual(expected, deployment.api_version, '1.3 breaks')
+
+        deployment.version = mock.MagicMock(return_value=parse("1.2"))
+        self.assertEqual(expected, deployment.api_version, '1.2 breaks')
 
     def test_create_failure(self):
         with self.assertRaises(
