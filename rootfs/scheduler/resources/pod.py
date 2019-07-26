@@ -217,6 +217,17 @@ class Pod(Resource):
                 "value": "1"
             })
 
+        # Inject POD_IP variable with Pod's IP address
+        if os.environ.get("DEIS_EXPOSE_POD_IP", False):
+            data["env"].append({
+                "name": "POD_IP",
+                "valueFrom": {
+                    "fieldRef": {
+                        "fieldPath": "status.podIP",
+                    }
+                }
+            })
+
         # list sorted by dict key name
         data['env'].sort(key=operator.itemgetter('name'))
 
