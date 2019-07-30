@@ -1,11 +1,12 @@
 from collections import OrderedDict
 from datetime import datetime
 import logging
-from packaging.version import Version
+from packaging.version import Version, parse
 import requests
 import requests.exceptions
 from requests_toolbelt import user_agent
 import time
+import re
 from urllib.parse import urljoin
 
 from api import __version__ as deis_version
@@ -84,7 +85,9 @@ class KubeHTTPClient(object):
             raise KubeHTTPException(response, 'fetching Kubernetes version')
 
         data = response.json()
-        return Version('{}.{}'.format(data['major'], data['minor']))
+        parsed_version = parse(
+            re.sub("[^0-9\.]", '', str('{}.{}'.format(data['major'], data['minor']))))
+        return Version('{}'.format(parsed_version))
 
     @staticmethod
     def parse_date(date):
