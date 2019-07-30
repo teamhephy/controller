@@ -5,7 +5,7 @@ Run the tests with './manage.py test scheduler'
 """
 from unittest import mock
 import copy
-from packaging.version import parse
+from packaging.version import parse, Version, InvalidVersion
 from scheduler import KubeHTTPException, KubeException
 from scheduler.tests import TestCase
 from scheduler.utils import generate_random_name
@@ -76,9 +76,33 @@ class DeploymentsTest(TestCase):
         self.scheduler.scale(namespace, name, **kwargs)
         return name
 
+    def test_good_init_api_version(self):
+        try:
+            data = "1.13"
+            Version('{}'.format(data))
+        except InvalidVersion:
+            self.fail("Version {} raised InvalidVersion exception!".format(data))
+
+    def test_bad_init_api_version(self):
+        data = "1.13+"
+        with self.assertRaises(
+            InvalidVersion,
+            msg='packaging.version.InvalidVersion: Invalid version: {}'.format(data)  # noqa
+        ):
+            Version('{}'.format(data))
+
     def test_deployment_api_version_1_9_and_up(self):
         expected = 'apps/v1'
         deployment = copy.copy(self.scheduler.deployment)
+
+        deployment.version = mock.MagicMock(return_value=parse("1.12+"))
+        self.assertEqual(expected, deployment.api_version, '1.12+ breaks')
+
+        deployment.version = mock.MagicMock(return_value=parse("1.11+"))
+        self.assertEqual(expected, deployment.api_version, '1.11+ breaks')
+
+        deployment.version = mock.MagicMock(return_value=parse("1.10+"))
+        self.assertEqual(expected, deployment.api_version, '1.10+ breaks')
 
         deployment.version = mock.MagicMock(return_value=parse("1.9+"))
         self.assertEqual(expected, deployment.api_version, '1.9+ breaks')
