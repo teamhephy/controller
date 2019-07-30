@@ -44,7 +44,7 @@ rules:
 - apiGroups: ["extensions", "apps"]
   resources: ["deployments"]
   verbs: ["get", "list", "create", "update", "delete"]
-- apiGroups: ["extensions"]
+- apiGroups: ["extensions", "apps"]
   resources: ["deployments/scale", "replicasets/scale"]
   verbs: ["get", "update"]
 - apiGroups: ["extensions", "autoscaling"]
