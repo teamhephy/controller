@@ -92,48 +92,40 @@ class DeploymentsTest(TestCase):
             Version('{}'.format(data))
 
     def test_deployment_api_version_1_9_and_up(self):
-        expected = 'apps/v1'
+        cases = ['1.12', '1.11', '1.10', '1.9']
+
         deployment = copy.copy(self.scheduler.deployment)
 
-        deployment.version = mock.MagicMock(return_value=parse("1.12+"))
-        self.assertEqual(expected, deployment.api_version, '1.12+ breaks')
+        expected = 'apps/v1'
 
-        deployment.version = mock.MagicMock(return_value=parse("1.11+"))
-        self.assertEqual(expected, deployment.api_version, '1.11+ breaks')
-
-        deployment.version = mock.MagicMock(return_value=parse("1.10+"))
-        self.assertEqual(expected, deployment.api_version, '1.10+ breaks')
-
-        deployment.version = mock.MagicMock(return_value=parse("1.9+"))
-        self.assertEqual(expected, deployment.api_version, '1.9+ breaks')
-
-        deployment.version = mock.MagicMock(return_value=parse("1.9"))
-        self.assertEqual(expected, deployment.api_version, '1.9 breaks')
+        for canonical in cases:
+            deployment.version = mock.MagicMock(return_value=parse(canonical))
+            actual = deployment.api_version
+            self.assertEqual(
+                    expected,
+                    actual,
+                    "{} breaks - expected {}, got {}".format(
+                        canonical,
+                        expected,
+                        actual))
 
     def test_deployment_api_version_1_8_and_lower(self):
-        expected = 'extensions/v1beta1'
+        cases = ['1.8', '1.7', '1.6', '1.5', '1.4', '1.3', '1.2']
+
         deployment = copy.copy(self.scheduler.deployment)
 
-        deployment.version = mock.MagicMock(return_value=parse("1.8"))
-        self.assertEqual(expected, deployment.api_version, '1.8 breaks')
+        expected = 'extensions/v1beta1'
 
-        deployment.version = mock.MagicMock(return_value=parse("1.7"))
-        self.assertEqual(expected, deployment.api_version, '1.7 breaks')
-
-        deployment.version = mock.MagicMock(return_value=parse("1.6"))
-        self.assertEqual(expected, deployment.api_version, '1.6 breaks')
-
-        deployment.version = mock.MagicMock(return_value=parse("1.5"))
-        self.assertEqual(expected, deployment.api_version, '1.5 breaks')
-
-        deployment.version = mock.MagicMock(return_value=parse("1.4"))
-        self.assertEqual(expected, deployment.api_version, '1.4 breaks')
-
-        deployment.version = mock.MagicMock(return_value=parse("1.3"))
-        self.assertEqual(expected, deployment.api_version, '1.3 breaks')
-
-        deployment.version = mock.MagicMock(return_value=parse("1.2"))
-        self.assertEqual(expected, deployment.api_version, '1.2 breaks')
+        for canonical in cases:
+            deployment.version = mock.MagicMock(return_value=parse(canonical))
+            actual = deployment.api_version
+            self.assertEqual(
+                    expected,
+                    actual,
+                    "{} breaks - expected {}, got {}".format(
+                        canonical,
+                        expected,
+                        actual))
 
     def test_create_failure(self):
         with self.assertRaises(
