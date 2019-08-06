@@ -269,6 +269,10 @@ EXPERIMENTAL_NATIVE_INGRESS_HOSTNAME = os.environ.get('EXPERIMENTAL_NATIVE_INGRE
 SLUGRUNNER_IMAGE = os.environ.get('SLUGRUNNER_IMAGE_NAME', 'quay.io/deisci/slugrunner:canary')  # noqa
 IMAGE_PULL_POLICY = os.environ.get('IMAGE_PULL_POLICY', "IfNotPresent")  # noqa
 
+# Pod IP Exposure
+DEIS_EXPOSE_POD_IP = bool(os.environ.get('DEIS_EXPOSE_POD_IP', False))
+
+
 # True, true, yes, y and more evaluate to True
 # False, false, no, n and more evaluate to False
 # https://docs.python.org/3/distutils/apiref.html?highlight=distutils.util#distutils.util.strtobool
