@@ -218,7 +218,7 @@ class Pod(Resource):
             })
 
         # Inject POD_IP variable with Pod's IP address
-        if os.environ.get("DEIS_EXPOSE_POD_IP", False):
+        if kwargs.get('set_pod_ip'):
             data["env"].append({
                 "name": "POD_IP",
                 "valueFrom": {

@@ -1081,6 +1081,9 @@ class App(UuidAuditedModel):
         # set the image pull policy that is associated with the application container
         image_pull_policy = config.values.get('IMAGE_PULL_POLICY', settings.IMAGE_PULL_POLICY)
 
+        # set pod ip if this variable is set
+        set_pod_ip = config.values.get('DEIS_EXPOSE_POD_IP', settings.DEIS_EXPOSE_POD_IP)
+
         # create image pull secret if needed
         image_pull_secret_name = self.image_pull_secret(self.id, config.registry, release.image)
 
@@ -1113,7 +1116,8 @@ class App(UuidAuditedModel):
             'pod_termination_grace_period_seconds': pod_termination_grace_period_seconds,
             'pod_termination_grace_period_each': config.termination_grace_period,
             'image_pull_secret_name': image_pull_secret_name,
-            'image_pull_policy': image_pull_policy
+            'image_pull_policy': image_pull_policy,
+            'set_pod_ip': set_pod_ip
         }
 
     def set_application_config(self, release):
