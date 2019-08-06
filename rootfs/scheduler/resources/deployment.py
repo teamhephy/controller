@@ -14,7 +14,7 @@ class Deployment(Resource):
     @property
     def api_version(self):
         if self.version() >= parse("1.9.0"):
-            return 'apps/v1'
+            return 'extensions/v1beta1'
 
         return 'extensions/v1beta1'
 
