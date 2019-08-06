@@ -968,7 +968,9 @@ class App(UuidAuditedModel):
         """
         name = '{}-{}'.format(self.id, proc_type)
         # basically fake out a Deployment object (only thing we use) to assign to the HPA
-        target = {'kind': 'Deployment', 'metadata': {'name': name}}
+        target = {'apiVersion': 'extensions/v1beta1',
+                  'kind': 'Deployment',
+                  'metadata': {'name': name}}
 
         try:
             # get the target for autoscaler, in this case Deployment
