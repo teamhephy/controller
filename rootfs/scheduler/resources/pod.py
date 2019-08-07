@@ -218,7 +218,7 @@ class Pod(Resource):
             })
 
         # Inject POD_IP variable with Pod's IP address
-        if kwargs.get('set_pod_ip'):
+        if kwargs.get('set_pod_ip') == 'True':
             data["env"].append({
                 "name": "POD_IP",
                 "valueFrom": {
@@ -352,6 +352,7 @@ class Pod(Resource):
     This should be added only for the build pack apps when a custom liveness probe is not set to
     make sure that the pod is ready only when the slug is downloaded and started running.
     """
+
     def _default_buildpack_readiness_probe(self, delay=30, timeout=5, period_seconds=5,
                                            success_threshold=1, failure_threshold=1):
         readinessprobe = {
