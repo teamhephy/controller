@@ -3,6 +3,9 @@ Unit tests for the Deis scheduler module.
 
 Run the tests with './manage.py test scheduler'
 """
+from unittest import mock
+import copy
+from packaging.version import parse, Version, InvalidVersion
 from scheduler import KubeHTTPException, KubeException
 from scheduler.tests import TestCase
 from scheduler.utils import generate_random_name
@@ -72,6 +75,57 @@ class DeploymentsTest(TestCase):
 
         self.scheduler.scale(namespace, name, **kwargs)
         return name
+
+    def test_good_init_api_version(self):
+        try:
+            data = "1.13"
+            Version('{}'.format(data))
+        except InvalidVersion:
+            self.fail("Version {} raised InvalidVersion exception!".format(data))
+
+    def test_bad_init_api_version(self):
+        data = "1.13+"
+        with self.assertRaises(
+            InvalidVersion,
+            msg='packaging.version.InvalidVersion: Invalid version: {}'.format(data)  # noqa
+        ):
+            Version('{}'.format(data))
+
+    def test_deployment_api_version_1_9_and_up(self):
+        cases = ['1.12', '1.11', '1.10', '1.9']
+
+        deployment = copy.copy(self.scheduler.deployment)
+
+        expected = 'extensions/v1beta1'
+
+        for canonical in cases:
+            deployment.version = mock.MagicMock(return_value=parse(canonical))
+            actual = deployment.api_version
+            self.assertEqual(
+                    expected,
+                    actual,
+                    "{} breaks - expected {}, got {}".format(
+                        canonical,
+                        expected,
+                        actual))
+
+    def test_deployment_api_version_1_8_and_lower(self):
+        cases = ['1.8', '1.7', '1.6', '1.5', '1.4', '1.3', '1.2']
+
+        deployment = copy.copy(self.scheduler.deployment)
+
+        expected = 'extensions/v1beta1'
+
+        for canonical in cases:
+            deployment.version = mock.MagicMock(return_value=parse(canonical))
+            actual = deployment.api_version
+            self.assertEqual(
+                    expected,
+                    actual,
+                    "{} breaks - expected {}, got {}".format(
+                        canonical,
+                        expected,
+                        actual))
 
     def test_create_failure(self):
         with self.assertRaises(

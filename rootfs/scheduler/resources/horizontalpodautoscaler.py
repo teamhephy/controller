@@ -75,6 +75,7 @@ class HorizontalPodAutoscaler(Resource):
             manifest['spec']['targetCPUUtilizationPercentage'] = cpu_percent
 
             manifest['spec']['scaleTargetRef'] = {
+                'apiVersion': target['apiVersion'],
                 # only works with Deployments, RS and RC
                 'kind': target['kind'],
                 'name': target['metadata']['name'],
