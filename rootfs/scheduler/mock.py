@@ -450,6 +450,7 @@ def manage_replicasets(deployment, url):
 
     # get RS url
     rs_url = url.replace('_deployments_', '_replicasets_')
+    rs_url = rs_url.replace('apis_extensions_v1beta1_', 'apis_apps_v1_')
     rs_url += '_' + pod_hash
     namespaced_url = rs_url[0:(rs_url.find("_replicasets") + 12)]
 
