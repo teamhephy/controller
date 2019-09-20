@@ -4,7 +4,7 @@ from scheduler.resources import Resource
 
 class ReplicaSet(Resource):
     api_prefix = 'apis'
-    api_version = 'extensions/v1beta1'
+    api_version = 'apps/v1'
     short_name = 'rs'
 
     def get(self, namespace, name=None, **kwargs):
