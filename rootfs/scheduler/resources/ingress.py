@@ -23,6 +23,8 @@ class Ingress(Resource):
         return response
 
     def create(self, ingress, namespace, hostname):
+        # Ingress API will be deprecated in 1.20 to use networking.k8s.io/v1beta1
+        # https://kubernetes.io/blog/2019/07/18/api-deprecations-in-1-16/
         url = "/apis/extensions/v1beta1/namespaces/%s/ingresses" % namespace
 
         data = {
