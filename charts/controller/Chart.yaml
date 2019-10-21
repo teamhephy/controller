@@ -1,7 +1,6 @@
 name: controller
-home: https://github.com/deisthree/controller
+home: https://github.com/teamhephy/controller
 version: <Will be populated by the ci before publishing the chart>
-description: Deis Workflow Controller (API).
+description: Hephy Workflow Controller (API).
 maintainers:
-  - name: Deis Team
-    email: engineering@deis.com
+- email: team@teamhephy.com
