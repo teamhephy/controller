@@ -1,6 +1,7 @@
 
 # Deis Controller
 
+[![Build Status](https://travis-ci.org/teamhephy/controller.svg?branch=master)](https://travis-ci.org/teamhephy/controller)
 [![codecov.io](https://codecov.io/github/deis/controller/coverage.svg?branch=master)](https://codecov.io/github/deis/controller?branch=master)
 [![Docker Repository on Quay](https://quay.io/repository/deisci/controller/status "Docker Repository on Quay")](https://quay.io/repository/deisci/controller)
 
