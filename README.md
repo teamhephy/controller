@@ -1,7 +1,7 @@
 
 # Deis Controller
 
-[![Build Status](https://ci.deis.io/job/controller/badge/icon)](https://ci.deis.io/job/controller)
+[![Build Status](https://travis-ci.org/teamhephy/controller.svg?branch=master)](https://travis-ci.org/teamhephy/controller)
 [![codecov.io](https://codecov.io/github/deis/controller/coverage.svg?branch=master)](https://codecov.io/github/deis/controller?branch=master)
 [![Docker Repository on Quay](https://quay.io/repository/deisci/controller/status "Docker Repository on Quay")](https://quay.io/repository/deisci/controller)
 [![Dependency Status](https://www.versioneye.com/user/projects/5863f1de6f4bf900128fa95a/badge.svg?style=flat)](https://www.versioneye.com/user/projects/5863f1de6f4bf900128fa95a)
