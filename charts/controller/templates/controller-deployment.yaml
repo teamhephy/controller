@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: {{ .Values.global.api_group }}
 kind: Deployment
 metadata:
   name: deis-controller
