@@ -12,6 +12,8 @@ from django_auth_ldap.config import LDAPSearch, GroupOfNamesType
 # https://docs.djangoproject.com/en/1.11/ref/settings/#debug
 DEBUG = bool(os.environ.get('DEIS_DEBUG', False))
 
+LOG_LEVEL = os.environ.get('LOG_LEVEL', 'DEBUG')
+
 # If set to True, Django's normal exception handling of view functions
 # will be suppressed, and exceptions will propagate upwards
 # https://docs.djangoproject.com/en/1.11/ref/settings/#debug-propagate-exceptions
@@ -172,10 +174,11 @@ APPEND_SLASH = False
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'root': {'level': 'DEBUG' if DEBUG else 'INFO'},
+    'root': {'level': LOG_LEVEL},
     'formatters': {
         'verbose': {
-            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+            'format': '%(asctime)s %(levelname)s %(module)s %(message)s',
+            'datefmt': '%Y-%m-%dT%H:%M:%SZ',
         },
         'simple': {
             'format': '%(levelname)s %(message)s'
@@ -195,9 +198,9 @@ LOGGING = {
             'class': 'logging.NullHandler',
         },
         'console': {
-            'level': 'DEBUG',
+            'level': LOG_LEVEL,
             'class': 'logging.StreamHandler',
-            'formatter': 'simple'
+            'formatter': 'verbose'
         }
     },
     'loggers': {
@@ -226,14 +229,17 @@ LOGGING = {
         },
         'api': {
             'handlers': ['console'],
+            'level': LOG_LEVEL,
             'propagate': True,
         },
         'registry': {
             'handlers': ['console'],
+            'level': LOG_LEVEL,
             'propagate': True,
         },
         'scheduler': {
             'handlers': ['console'],
+            'level': LOG_LEVEL,
             'propagate': True,
         },
     }
