@@ -275,9 +275,9 @@ class Deployment(Resource):
 
         if (
             'unavailableReplicas' in status or
-            ('replicas' not in status or status['replicas'] is not desired) or
-            ('updatedReplicas' not in status or status['updatedReplicas'] is not desired) or
-            ('availableReplicas' not in status or status['availableReplicas'] is not desired)
+            ('replicas' not in status or status['replicas'] != desired) or
+            ('updatedReplicas' not in status or status['updatedReplicas'] != desired) or
+            ('availableReplicas' not in status or status['availableReplicas'] != desired)
         ):
             return False, pods
 
