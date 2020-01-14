@@ -129,7 +129,7 @@ spec:
                   name: database-creds
                   key: password
 {{- if (.Values.deis_ignore_scheduling_failure) }}
-            - name:DEIS_IGNORE_SCHEDULING_FAILURE
+            - name: DEIS_IGNORE_SCHEDULING_FAILURE
               value: "{{ .Values.deis_ignore_scheduling_failure }}"
 {{- end }}
             - name: RESERVED_NAMES
