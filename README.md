@@ -1,14 +1,12 @@
 
 # Deis Controller
 
-[![Build Status](https://ci.deis.io/job/controller/badge/icon)](https://ci.deis.io/job/controller)
 [![codecov.io](https://codecov.io/github/deis/controller/coverage.svg?branch=master)](https://codecov.io/github/deis/controller?branch=master)
 [![Docker Repository on Quay](https://quay.io/repository/deisci/controller/status "Docker Repository on Quay")](https://quay.io/repository/deisci/controller)
-[![Dependency Status](https://www.versioneye.com/user/projects/5863f1de6f4bf900128fa95a/badge.svg?style=flat)](https://www.versioneye.com/user/projects/5863f1de6f4bf900128fa95a)
 
 Deis (pronounced DAY-iss) Workflow is an open source Platform as a Service (PaaS) that adds a developer-friendly layer to any [Kubernetes](http://kubernetes.io) cluster, making it easy to deploy and manage applications on your own servers.
 
-For more information about the Deis Workflow, please visit the main project page at https://github.com/deisthree/workflow.
+For more information about the Deis Workflow, please visit the main project page at https://github.com/teamhephy/workflow.
 
 We welcome your input! If you have feedback, please [submit an issue][issues]. If you'd like to participate in development, please read the "Development" section below and [submit a pull request][prs].
 
@@ -47,7 +45,7 @@ You'll want to test your code changes interactively in a working Kubernetes clus
 
 ### Workflow Installation
 
-After you have a working Kubernetes cluster, you're ready to [install Workflow](https://deis.com/docs/workflow/installing-workflow/).
+After you have a working Kubernetes cluster, you're ready to [install Workflow](https://docs.teamhephy.com/installing-workflow/).
 
 ## Testing Your Code
 
@@ -77,8 +75,8 @@ kubectl get pod --namespace=deis -w | grep deis-controller
 ```
 
 [install-k8s]: https://kubernetes.io/docs/setup/pick-right-solution
-[issues]: https://github.com/deisthree/controller/issues
-[prs]: https://github.com/deisthree/controller/pulls
-[workflow]: https://github.com/deisthree/workflow
+[issues]: https://github.com/teamhephy/controller/issues
+[prs]: https://github.com/teamhephy/controller/pulls
+[workflow]: https://github.com/teamhephy/workflow
 [Docker]: https://www.docker.com/
-[v2.18]: https://github.com/deisthree/workflow/releases/tag/v2.18.0
+[v2.18]: https://github.com/teamhephy/workflow/releases/tag/v2.21.4
