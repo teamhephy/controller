@@ -218,6 +218,12 @@ LOGGING = {
             'filters': ['require_debug_true'],
             'propagate': True,
         },
+        'django_auth_ldap': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'filters': ['require_debug_true'],
+            'propagate': False,
+        },
         'api': {
             'handlers': ['console'],
             'propagate': True,
