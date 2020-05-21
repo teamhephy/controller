@@ -1,4 +1,4 @@
-FROM quay.io/deis/base:v0.3.6
+FROM hephy/base:v0.4.0
 
 RUN adduser --system \
 	--shell /bin/bash \
