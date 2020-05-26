@@ -17,6 +17,7 @@ RUN buildDeps='gcc libffi-dev libpq-dev libldap2-dev libsasl2-dev python3-dev py
         libpq5 \
         libldap-2.4 \
         python3-minimal \
+        python3-distutils \
         # cryptography package needs pkg_resources
         python3-pkg-resources && \
     ln -s /usr/bin/python3 /usr/bin/python && \
