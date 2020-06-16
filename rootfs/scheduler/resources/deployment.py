@@ -392,8 +392,9 @@ class Deployment(Resource):
                 }
             except Exception as e:
                 if try_ + 1 < max_retries:
-                    self.log(namespace, "Got an empty ReplicaSet list. Trying one more time. {}".format(
-                        json.dumps(labels)))
+                    self.log(namespace,
+                             "Got an empty ReplicaSet list. Trying one more time. {}".format(
+                                 json.dumps(labels)))
                     time.sleep(retry_sleep_sec)
                     continue
                 self.log(namespace, "Did not find the ReplicaSet for {}".format(
