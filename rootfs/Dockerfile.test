@@ -1,4 +1,4 @@
-FROM hephy/base:v0.4.0
+FROM hephy/base:v0.4.1
 
 RUN adduser --system \
 	--shell /bin/bash \
