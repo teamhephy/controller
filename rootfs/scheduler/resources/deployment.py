@@ -137,6 +137,11 @@ class Deployment(Resource):
         return response
 
     def update(self, namespace, name, image, entrypoint, command, spec_annotations, **kwargs):
+        # Set the replicas value to the current replicas of the deployment.
+        # This avoids resetting the replicas which causes disruptions during the deployment.
+        deployment = self.deployment.get(namespace, name).json()
+        current_replicas = int(deployment['spec']['replicas'])
+        kwargs['replicas'] = current_replicas
         manifest = self.manifest(namespace, name, image,
                                  entrypoint, command, spec_annotations, **kwargs)
 
