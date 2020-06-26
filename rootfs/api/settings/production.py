@@ -12,6 +12,9 @@ from django_auth_ldap.config import LDAPSearch, GroupOfNamesType
 # https://docs.djangoproject.com/en/1.11/ref/settings/#debug
 DEBUG = bool(os.environ.get('DEIS_DEBUG', False))
 
+# A boolean flag that turns on/off verbose logging.
+LOG_VERBOSE = bool(os.environ.get('LOG_VERBOSE', False))
+
 # If set to True, Django's normal exception handling of view functions
 # will be suppressed, and exceptions will propagate upwards
 # https://docs.djangoproject.com/en/1.11/ref/settings/#debug-propagate-exceptions
@@ -175,7 +178,8 @@ LOGGING = {
     'root': {'level': 'DEBUG' if DEBUG else 'INFO'},
     'formatters': {
         'verbose': {
-            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s',
+            'datefmt': '%Y-%m-%dT%H:%M:%SZ',
         },
         'simple': {
             'format': '%(levelname)s %(message)s'
@@ -197,7 +201,7 @@ LOGGING = {
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
-            'formatter': 'simple'
+            'formatter': 'verbose' if LOG_VERBOSE else 'simple'
         }
     },
     'loggers': {
