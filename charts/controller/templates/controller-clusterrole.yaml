@@ -38,7 +38,7 @@ rules:
 - apiGroups: [""]
   resources: ["resourcequotas"]
   verbs: ["get", "create"]
-- apiGroups: ["extensions"]
+- apiGroups: ["extensions", "apps"]
   resources: ["replicasets"]
   verbs: ["get", "list", "delete", "update"]
 - apiGroups: ["extensions", "apps"]
