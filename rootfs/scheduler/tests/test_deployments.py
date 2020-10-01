@@ -96,7 +96,7 @@ class DeploymentsTest(TestCase):
 
         deployment = copy.copy(self.scheduler.deployment)
 
-        expected = 'extensions/v1beta1'
+        expected = 'apps/v1'
 
         for canonical in cases:
             deployment.version = mock.MagicMock(return_value=parse(canonical))
