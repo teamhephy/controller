@@ -102,12 +102,12 @@ class DeploymentsTest(TestCase):
             deployment.version = mock.MagicMock(return_value=parse(canonical))
             actual = deployment.api_version
             self.assertEqual(
+                expected,
+                actual,
+                "{} breaks - expected {}, got {}".format(
+                    canonical,
                     expected,
-                    actual,
-                    "{} breaks - expected {}, got {}".format(
-                        canonical,
-                        expected,
-                        actual))
+                    actual))
 
     def test_deployment_api_version_1_8_and_lower(self):
         cases = ['1.8', '1.7', '1.6', '1.5', '1.4', '1.3', '1.2']
@@ -120,12 +120,12 @@ class DeploymentsTest(TestCase):
             deployment.version = mock.MagicMock(return_value=parse(canonical))
             actual = deployment.api_version
             self.assertEqual(
+                expected,
+                actual,
+                "{} breaks - expected {}, got {}".format(
+                    canonical,
                     expected,
-                    actual,
-                    "{} breaks - expected {}, got {}".format(
-                        canonical,
-                        expected,
-                        actual))
+                    actual))
 
     def test_create_failure(self):
         with self.assertRaises(
@@ -158,11 +158,13 @@ class DeploymentsTest(TestCase):
         deployment = self.scheduler.deployment.get(self.namespace, name).json()
         self.assertEqual(deployment['spec']['replicas'], 4, deployment)
 
-        # emulate scale without calling scale
-        self.update(self.namespace, name, replicas=2)
+        # update the version
+        new_version = 'v1024'
+        self.update(self.namespace, name, version=new_version)
 
         deployment = self.scheduler.deployment.get(self.namespace, name).json()
-        self.assertEqual(deployment['spec']['replicas'], 2, deployment)
+        self.assertEqual(deployment['spec']['template']['metadata']['labels']['version'],
+                         new_version, deployment)
 
     def test_delete_failure(self):
         # test failure

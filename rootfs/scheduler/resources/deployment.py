@@ -139,6 +139,11 @@ class Deployment(Resource):
         return response
 
     def update(self, namespace, name, image, entrypoint, command, spec_annotations, **kwargs):
+        # Set the replicas value to the current replicas of the deployment.
+        # This avoids resetting the replicas which causes disruptions during the deployment.
+        deployment = self.deployment.get(namespace, name).json()
+        current_replicas = int(deployment['spec']['replicas'])
+        kwargs['replicas'] = current_replicas
         manifest = self.manifest(namespace, name, image,
                                  entrypoint, command, spec_annotations, **kwargs)
 
@@ -277,9 +282,9 @@ class Deployment(Resource):
 
         if (
             'unavailableReplicas' in status or
-            ('replicas' not in status or status['replicas'] is not desired) or
-            ('updatedReplicas' not in status or status['updatedReplicas'] is not desired) or
-            ('availableReplicas' not in status or status['availableReplicas'] is not desired)
+            ('replicas' not in status or status['replicas'] != desired) or
+            ('updatedReplicas' not in status or status['updatedReplicas'] != desired) or
+            ('availableReplicas' not in status or status['availableReplicas'] != desired)
         ):
             return False, pods
 
@@ -380,22 +385,36 @@ class Deployment(Resource):
         Request for new ReplicaSet of Deployment and search for failed events involved by that RS
         Raises: KubeException when RS have events with FailedCreate reason
         """
-        response = self.rs.get(namespace, labels=labels)
-        data = response.json()
-        fields = {
-            'involvedObject.kind': 'ReplicaSet',
-            'involvedObject.name': data['items'][0]['metadata']['name'],
-            'involvedObject.namespace': namespace,
-            'involvedObject.uid': data['items'][0]['metadata']['uid'],
-        }
-        events_list = self.ns.events(namespace, fields=fields).json()
-        events = events_list.get('items', [])
-        if events is not None and len(events) != 0:
-            for event in events:
-                if event['reason'] == 'FailedCreate':
-                    log = self._get_formatted_messages(events)
-                    self.log(namespace, log)
-                    raise KubeException(log)
+        max_retries = 3
+        retry_sleep_sec = 3.0
+        for try_ in range(max_retries):
+            response = self.rs.get(namespace, labels=labels)
+            data = response.json()
+            try:
+                fields = {
+                    'involvedObject.kind': 'ReplicaSet',
+                    'involvedObject.name': data['items'][0]['metadata']['name'],
+                    'involvedObject.namespace': namespace,
+                    'involvedObject.uid': data['items'][0]['metadata']['uid'],
+                }
+            except Exception as e:
+                if try_ + 1 < max_retries:
+                    self.log(namespace,
+                             "Got an empty ReplicaSet list. Trying one more time. {}".format(
+                                 json.dumps(labels)))
+                    time.sleep(retry_sleep_sec)
+                    continue
+                self.log(namespace, "Did not find the ReplicaSet for {}".format(
+                    json.dumps(labels)), "WARN")
+                raise e
+            events_list = self.ns.events(namespace, fields=fields).json()
+            events = events_list.get('items', [])
+            if events is not None and len(events) != 0:
+                for event in events:
+                    if event['reason'] == 'FailedCreate':
+                        log = self._get_formatted_messages(events)
+                        self.log(namespace, log)
+                        raise KubeException(log)
 
     @staticmethod
     def _get_formatted_messages(events):

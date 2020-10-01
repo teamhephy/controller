@@ -552,7 +552,7 @@ class Pod(Resource):
         if not events:
             events = []
         # make sure that events are sorted
-        events.sort(key=lambda x: x['lastTimestamp'])
+        events.sort(key=lambda x: x['lastTimestamp'] or '')
         return events
 
     def _handle_pod_errors(self, pod, reason, message):
@@ -577,9 +577,11 @@ class Pod(Resource):
             "ErrImageNeverPull": "ErrImageNeverPullPolicy",
             # Not including this one for now as the message is not useful
             # "BackOff": "BackOffPullImage",
-            # FailedScheduling relates limits
-            "FailedScheduling": "FailedScheduling",
         }
+        # We want to be able to ignore pod scheduling errors as they might be temporary
+        if not os.environ.get("DEIS_IGNORE_SCHEDULING_FAILURE", False):
+            # FailedScheduling relates limits
+            event_errors["FailedScheduling"] = "FailedScheduling"
 
         # Nicer error than from the event
         # Often this gets to ImageBullBackOff before we can introspect tho
