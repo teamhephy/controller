@@ -1,12 +1,24 @@
 from scheduler.resources import Resource
 from scheduler.exceptions import KubeHTTPException
 
+from packaging.version import parse
+
 
 class Scale(Resource):
+
+    @property
+    def scale_api_version(self):
+        # API locations have changed since 1.9 and deprecated in 1.16
+        # https://kubernetes.io/blog/2019/07/18/api-deprecations-in-1-16/
+        if self.version() >= parse("1.9.0"):
+            return 'autoscaling/v1'
+
+        return 'extensions/v1beta1'
+
     def manifest(self, namespace, name, replicas):
         manifest = {
             'kind': 'Scale',
-            'apiVersion': self.api_version,
+            'apiVersion': self.scale_api_version,
             'metadata': {
                 'namespace': namespace,
                 'name': name,
