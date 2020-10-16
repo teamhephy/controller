@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.shortcuts import get_object_or_404
 
-from api.models import Key, App, Domain, Certificate, Service
+from api.models import Key, App, AppSettings, Domain, Certificate, Service
 from api.exceptions import DeisException, AlreadyExists
 
 
@@ -9,6 +9,7 @@ class Command(BaseCommand):
     """Management command for publishing Deis platform state from the database
     to k8s.
     """
+
     def handle(self, *args, **options):
         """Publishes Deis platform state from the database to kubernetes."""
         print("Publishing DB state to kubernetes...")
@@ -39,6 +40,16 @@ class Command(BaseCommand):
             except DeisException as error:
                 print('ERROR: There was a problem deploying {} '
                       'due to {}'.format(application, str(error)))
+
+            # deploy autoscaling HPAs for application
+            appsettings = AppSettings.objects.filter(app=application).order_by('-created')[0]
+            if appsettings.autoscale:
+                try:
+                    for proc_type in application.structure:
+                        application.autoscale(proc_type, appsettings.autoscale[proc_type])
+                except Exception as error:
+                    print('ERROR: There was a problem deploying HPAs for this {} proc_type '
+                          'of {} app due to error: {}'.format(proc_type, application, error))
 
         print("Done Publishing DB state to kubernetes.")
 

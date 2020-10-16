@@ -5,6 +5,7 @@ import sys
 
 class Command(BaseCommand):
     """Management command for healthchecks"""
+
     def handle(self, *args, **options):
         """Ensure DB and other things are alive"""
         print("Checking if database is alive")
