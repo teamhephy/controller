@@ -1142,6 +1142,25 @@ class App(UuidAuditedModel):
     def create_object_store_secret(self):
         try:
             self._scheduler.secret.get(self.id, 'objectstorage-keyfile')
+            if self._scheduler.secret.get(self.id, 'objectstorage-keyfile'):
+                '''
+                Rotating Secret Access Keys Bug:
+                Issue #9: https://github.com/teamhephy/controller/issues/9
+
+                We need to set a new objectstorage-keyfile if it has changed
+                in workflow's namespace
+                '''
+                workflow_objectstorage_keyfile = self._scheduler.secret.get(
+                    settings.WORKFLOW_NAMESPACE, 'objectstorage-keyfile').json()
+                app_objectstorage_keyfile = self._scheduler.secret.get(
+                    self.id, 'objectstorage-keyfile').json()
+                if workflow_objectstorage_keyfile['data'] != app_objectstorage_keyfile['data']:
+                    self.log('Refreshing the objectstorage-keyfile for {} namespace'
+                             .format(self.id), level=logging.INFO)
+                    self._scheduler.secret.delete(self.id, 'objectstorage-keyfile')
+                    secret = self._scheduler.secret.get(
+                        settings.WORKFLOW_NAMESPACE, 'objectstorage-keyfile').json()
+                    self._scheduler.secret.create(self.id, 'objectstorage-keyfile', secret['data'])
         except KubeException:
             secret = self._scheduler.secret.get(
                 settings.WORKFLOW_NAMESPACE, 'objectstorage-keyfile').json()
