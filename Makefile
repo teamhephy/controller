@@ -1,6 +1,6 @@
 # If DEIS_REGISTRY is not set, try to populate it from legacy DEV_REGISTRY
 DEIS_REGISTRY ?= $(DEV_REGISTRY)
-IMAGE_PREFIX ?= deis
+IMAGE_PREFIX ?= hephy
 COMPONENT ?= controller
 SHORT_NAME ?= $(COMPONENT)
 

@@ -26,6 +26,7 @@ CPUSHARE_MATCH = re.compile(
     r'^(?P<cpu>(([-+]?[0-9]*\.?[0-9]+[m]?)(/([-+]?[0-9]*\.?[0-9]+[m]?))?))$')
 TAGVAL_MATCH = re.compile(r'^(?:[a-zA-Z\d][-\.\w]{0,61})?[a-zA-Z\d]$')
 CONFIGKEY_MATCH = re.compile(r'^[a-z_]+[a-z0-9_]*$', re.IGNORECASE)
+TERMINATION_GRACE_PERIOD_MATCH = re.compile(r'^[0-9]*$')
 PROBE_SCHEMA = {
     "$schema": "http://json-schema.org/schema#",
 
@@ -218,6 +219,7 @@ class ConfigSerializer(serializers.ModelSerializer):
     registry = JSONFieldSerializer(required=False, binary=True)
     healthcheck = JSONFieldSerializer(convert_to_str=False, required=False, binary=True)
     routable = serializers.BooleanField(required=False)
+    termination_grace_period = JSONFieldSerializer(required=False, binary=True)
 
     class Meta:
         """Metadata options for a :class:`ConfigSerializer`."""
@@ -296,6 +298,21 @@ class ConfigSerializer(serializers.ModelSerializer):
             if not shares:
                 raise serializers.ValidationError(
                     "CPU limit format: <value> or <value>/<value>, where value must be a numeric")
+
+        return data
+
+    def validate_termination_grace_period(self, data):
+        for key, value in data.items():
+            if value is None:  # use NoneType to unset an item
+                continue
+
+            if not re.match(PROCTYPE_MATCH, key):
+                raise serializers.ValidationError(PROCTYPE_MISMATCH_MSG)
+
+            timeout = re.match(TERMINATION_GRACE_PERIOD_MATCH, str(value))
+            if not timeout:
+                raise serializers.ValidationError(
+                    "Termination Grace Period format: <value>, where value must be a numeric")
 
         return data
 
@@ -453,6 +470,40 @@ class DomainSerializer(serializers.ModelSerializer):
                "The domain {} is already in use by another app".format(value))
 
         return aceValue
+
+
+class ServiceSerializer(serializers.ModelSerializer):
+    """Serialize a :class:`~api.models.Service` model."""
+
+    app = serializers.SlugRelatedField(slug_field='id', queryset=models.App.objects.all())
+    owner = serializers.ReadOnlyField(source='owner.username')
+    procfile_type = serializers.CharField(allow_blank=False, allow_null=False, required=True)
+    path_pattern = serializers.CharField(allow_blank=False, allow_null=False, required=True)
+
+    class Meta:
+        """Metadata options for a :class:`ServiceSerializer`."""
+        model = models.Service
+        fields = ['owner', 'created', 'updated', 'app', 'procfile_type', 'path_pattern']
+        read_only_fields = ['uuid']
+
+    def validate_procfile_type(self, value):
+        if not re.match(PROCTYPE_MATCH, value):
+            raise serializers.ValidationError(PROCTYPE_MISMATCH_MSG)
+
+        return value
+
+    def validate_path_pattern(self, value):
+        for pattern in str(value).split(","):
+            if not pattern.strip():
+                raise serializers.ValidationError(
+                    "Service value should be valid regex (or set of regex split by comma)")
+            try:
+                re.compile(pattern)
+            except re.error as e:
+                raise serializers.ValidationError(
+                    "Service value should be valid regex (or set of regex split by comma)")
+
+        return value
 
 
 class CertificateSerializer(serializers.ModelSerializer):

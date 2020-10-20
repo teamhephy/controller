@@ -31,6 +31,7 @@ class HorizontalPodAutoscalersTest(TestCase):
             'image': 'quay.io/fake/image',
             'entrypoint': 'sh',
             'command': 'start',
+            'spec_annotations': kwargs.get('spec_annotations', {}),
         }
 
         # create a Deployment to test HPA with
@@ -65,26 +66,14 @@ class HorizontalPodAutoscalersTest(TestCase):
         self.assertEqual(horizontalpodautoscaler.status_code, 200, horizontalpodautoscaler.json())  # noqa
         return name
 
-    def update_deployment(self, namespace=None, name=generate_random_name(), **kwargs):
+    def scale_deployment(self, namespace=None, name=generate_random_name(), replicas=1):
         """
-        Helper function to update and verify a deployment on the namespace
+        Helper function to scale the replicas of a deployment
         """
         namespace = self.namespace if namespace is None else namespace
-        # these are all required even if it is kwargs...
-        kwargs = {
-            'app_type': kwargs.get('app_type', 'web'),
-            'version': kwargs.get('version', 'v99'),
-            'replicas': kwargs.get('replicas', 4),
-            'pod_termination_grace_period_seconds': 2,
-            'image': 'quay.io/fake/image',
-            'entrypoint': 'sh',
-            'command': 'start',
-        }
-
-        deployment = self.scheduler.deployment.update(namespace, name, **kwargs)
-        data = deployment.json()
-        self.assertEqual(deployment.status_code, 200, data)
-        return name
+        self.scheduler.deployment.scale(namespace, name, image=None,
+                                        entrypoint=None, command=None,
+                                        replicas=replicas)
 
     def test_create_failure(self):
         with self.assertRaises(
@@ -149,7 +138,7 @@ class HorizontalPodAutoscalersTest(TestCase):
         self.assertEqual(deployment['status']['availableReplicas'], 3)
 
         # scale deployment to 1 (should go back to 3)
-        self.update_deployment(self.namespace, name, replicas=1)
+        self.scale_deployment(self.namespace, name, replicas=1)
 
         # check the deployment object
         deployment = self.scheduler.deployment.get(self.namespace, name).json()
@@ -160,7 +149,7 @@ class HorizontalPodAutoscalersTest(TestCase):
         self.assertEqual(deployment['status']['availableReplicas'], 3)
 
         # scale deployment to 6 (should go back to 4)
-        self.update_deployment(self.namespace, name, replicas=6)
+        self.scale_deployment(self.namespace, name, replicas=6)
 
         # check the deployment object
         deployment = self.scheduler.deployment.get(self.namespace, name).json()

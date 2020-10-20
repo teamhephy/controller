@@ -166,7 +166,7 @@ class ConfigTest(DeisTransactionTestCase):
         for key in response.data:
             self.assertIn(key, ['uuid', 'owner', 'created', 'updated', 'app', 'values', 'memory',
                                 'cpu', 'tags', 'registry', 'healthcheck', 'lifecycle_post_start',
-                                'lifecycle_pre_stop'])
+                                'lifecycle_pre_stop', 'termination_grace_period'])
         expected = {
             'owner': self.user.username,
             'app': app_id,
@@ -190,7 +190,7 @@ class ConfigTest(DeisTransactionTestCase):
         for key in response.data:
             self.assertIn(key, ['uuid', 'owner', 'created', 'updated', 'app', 'values', 'memory',
                                 'cpu', 'tags', 'registry', 'healthcheck', 'lifecycle_post_start',
-                                'lifecycle_pre_stop'])
+                                'lifecycle_pre_stop', 'termination_grace_period'])
         expected = {
             'owner': self.user.username,
             'app': app_id,

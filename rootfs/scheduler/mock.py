@@ -336,7 +336,7 @@ def delete_pods(pods, current, desired):
 
 
 def create_pods(url, labels, base, new_pods):
-    # Start by fetching available pods in the Namespace that fit the profile
+    # Start by fetching available pods in the Namespace that fit the procfile
     # and prune down if needed, Otherwise go into the addition logic here
     for _ in range(new_pods):
         data = base.copy()
@@ -391,6 +391,8 @@ def upsert_pods(controller, url):
     # turn RC / RS (which a Deployment creates) url into pods one
     url = url.replace(cache_key(controller['metadata']['name']), '')
     if '_replicasets_' in url:
+        # Try replacing both just in case one or the other exists (api backwards compatibility)
+        url = url.replace('_replicasets_', '_pods').replace('apis_apps_v1', 'api_v1')  # noqa
         url = url.replace('_replicasets_', '_pods').replace('apis_extensions_v1beta1', 'api_v1')  # noqa
     else:
         url = url.replace('_replicationcontrollers_', '_pods')
@@ -512,7 +514,9 @@ def manage_replicasets(deployment, url):
 
 def update_deployment_status(namespaced_url, url, deployment, rs):
     # Fill out deployment.status for success as pods transition to running state
-    pod_url = namespaced_url.replace('_replicasets', '_pods').replace('apis_extensions_v1beta1', 'api_v1')  # noqa
+    pod_url = namespaced_url.replace('_replicasets', '_pods').replace('apis_apps_v1', 'api_v1')  # noqa
+    # Try replacing both just in case one or the other exists (api backwards compatibility)
+    pod_url = pod_url.replace('_replicasets', '_pods').replace('apis_extensions_v1beta1', 'api_v1')  # noqa
     while True:
         # The below needs to be done to emulate Deployment handling things
         # always cleanup pods

@@ -372,6 +372,41 @@ class DomainViewSet(AppResourceViewSet):
         return get_object_or_404(qs, domain=ace_domain)
 
 
+class ServiceViewSet(AppResourceViewSet):
+    """A viewset for interacting with Service objects."""
+    model = models.Service
+    serializer_class = serializers.ServiceSerializer
+
+    def list(self, *args, **kwargs):
+        services = self.get_app().service_set.all()
+        data = [obj.as_dict() for obj in services]
+        return Response({"services": data}, status=status.HTTP_200_OK)
+
+    def create_or_update(self, request, **kwargs):
+        pft = self.get_serializer().validate_procfile_type(request.data.get('procfile_type'))
+        pp = self.get_serializer().validate_path_pattern(request.data.get('path_pattern'))
+        app = self.get_app()
+        svc = app.service_set.filter(procfile_type=pft).first()
+        if svc:
+            if svc.path_pattern == pp:
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            else:
+                svc.path_pattern = pp
+                svc.save()
+        else:
+            svc = models.Service.objects.create(owner=app.owner, app=app,
+                                                procfile_type=pft,
+                                                path_pattern=pp)
+        return Response(status=status.HTTP_201_CREATED)
+
+    def delete(self, request, **kwargs):
+        pft = self.get_serializer().validate_procfile_type(request.data.get('procfile_type'))
+        qs = self.get_queryset(**kwargs)
+        svc = get_object_or_404(qs, procfile_type=pft)
+        svc.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 class CertificateViewSet(BaseDeisViewSet):
     """A viewset for interacting with Certificate objects."""
     model = models.Certificate

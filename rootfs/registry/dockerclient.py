@@ -26,7 +26,7 @@ class DockerClient(object):
 
     def __init__(self):
         timeout = os.environ.get('DOCKER_CLIENT_TIMEOUT', docker.constants.DEFAULT_TIMEOUT_SECONDS)
-        self.client = docker.Client(version='auto', timeout=timeout)
+        self.client = docker.Client(version='auto', timeout=int(timeout))
         self.registry = settings.REGISTRY_HOST + ':' + str(settings.REGISTRY_PORT)
 
     def login(self, repository, creds=None):

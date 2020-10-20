@@ -72,10 +72,12 @@ class AuditedModel(models.Model):
         mod = importlib.import_module(settings.SCHEDULER_MODULE)
         return mod.SchedulerClient(settings.SCHEDULER_URL, settings.K8S_API_VERIFY_TLS)
 
-    def _fetch_service_config(self, app):
+    def _fetch_service_config(self, app, svc_name=None):
         try:
             # Get the service from k8s to attach the domain correctly
-            svc = self._scheduler.svc.get(app, app).json()
+            if svc_name is None:
+                svc_name = app
+            svc = self._scheduler.svc.get(app, svc_name).json()
         except KubeException as e:
             raise ServiceUnavailable('Could not fetch Kubernetes Service {}'.format(app)) from e
 
@@ -90,9 +92,9 @@ class AuditedModel(models.Model):
 
         return svc
 
-    def _load_service_config(self, app, component):
+    def _load_service_config(self, app, component, svc_name=None):
         # fetch setvice definition with minimum structure
-        svc = self._fetch_service_config(app)
+        svc = self._fetch_service_config(app, svc_name)
 
         # always assume a .deis.io/ ending
         component = "%s.deis.io/" % component
@@ -103,9 +105,11 @@ class AuditedModel(models.Model):
 
         return config
 
-    def _save_service_config(self, app, component, data):
+    def _save_service_config(self, app, component, data, svc_name=None):
+        if svc_name is None:
+            svc_name = app
         # fetch setvice definition with minimum structure
-        svc = self._fetch_service_config(app)
+        svc = self._fetch_service_config(app, svc_name)
 
         # always assume a .deis.io ending
         component = "%s.deis.io/" % component
@@ -116,7 +120,7 @@ class AuditedModel(models.Model):
 
         # Update the k8s service for the application with new service information
         try:
-            self._scheduler.svc.update(app, app, svc)
+            self._scheduler.svc.update(app, svc_name, svc)
         except KubeException as e:
             raise ServiceUnavailable('Could not update Kubernetes Service {}'.format(app)) from e
 
@@ -142,6 +146,7 @@ from .build import Build  # noqa
 from .certificate import Certificate, validate_certificate  # noqa
 from .config import Config  # noqa
 from .domain import Domain  # noqa
+from .service import Service  # noqa
 from .key import Key, validate_base64  # noqa
 from .release import Release  # noqa
 from .tls import TLS  # noqa

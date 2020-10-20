@@ -1,4 +1,4 @@
-FROM quay.io/deis/base:v0.3.6
+FROM hephy/base:v0.4.1
 
 RUN adduser --system \
 	--shell /bin/bash \
@@ -49,7 +49,7 @@ RUN buildDeps='gcc libffi-dev libpq-dev libldap2-dev libsasl2-dev python3-dev py
 WORKDIR /app
 
 # test-unit additions to the main Dockerfile
-ENV PGBIN=/usr/lib/postgresql/9.5/bin PGDATA=/var/lib/postgresql/data
+ENV PGBIN=/usr/lib/postgresql/10/bin PGDATA=/var/lib/postgresql/data
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         git \

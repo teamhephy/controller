@@ -130,7 +130,7 @@ class Pod(Resource):
         spec['nodeSelector'] = kwargs.get('tags', {})
 
         # How long until a pod is forcefully terminated. 30 is kubernetes default
-        spec['terminationGracePeriodSeconds'] = kwargs.get('pod_termination_grace_period_seconds', 30)  # noqa
+        spec['terminationGracePeriodSeconds'] = self._get_termination_grace_period(kwargs)  # noqa
 
         # Check if it is a slug builder image.
         if build_type == "buildpack":
@@ -217,6 +217,17 @@ class Pod(Resource):
                 "value": "1"
             })
 
+        # Inject POD_IP variable with Pod's IP address
+        if kwargs.get('set_pod_ip') == 'True':
+            data["env"].append({
+                "name": "POD_IP",
+                "valueFrom": {
+                    "fieldRef": {
+                        "fieldPath": "status.podIP",
+                    }
+                }
+            })
+
         # list sorted by dict key name
         data['env'].sort(key=operator.itemgetter('name'))
 
@@ -254,6 +265,14 @@ class Pod(Resource):
 
             if resources:
                 container["resources"] = dict(resources)
+
+    def _get_termination_grace_period(self, kwargs):
+        """ return termination grace period """
+        app_type = kwargs.get("app_type")
+        timeout_global = kwargs.get('pod_termination_grace_period_seconds', 30)
+        timeout_local = kwargs.get("pod_termination_grace_period_each", {}).get(app_type)
+
+        return timeout_global if timeout_local is None else int(timeout_local)
 
     def _format_memory(self, mem):
         """ Format memory limit value """
@@ -333,6 +352,7 @@ class Pod(Resource):
     This should be added only for the build pack apps when a custom liveness probe is not set to
     make sure that the pod is ready only when the slug is downloaded and started running.
     """
+
     def _default_buildpack_readiness_probe(self, delay=30, timeout=5, period_seconds=5,
                                            success_threshold=1, failure_threshold=1):
         readinessprobe = {
@@ -532,7 +552,7 @@ class Pod(Resource):
         if not events:
             events = []
         # make sure that events are sorted
-        events.sort(key=lambda x: x['lastTimestamp'])
+        events.sort(key=lambda x: x['lastTimestamp'] or '')
         return events
 
     def _handle_pod_errors(self, pod, reason, message):
@@ -557,9 +577,11 @@ class Pod(Resource):
             "ErrImageNeverPull": "ErrImageNeverPullPolicy",
             # Not including this one for now as the message is not useful
             # "BackOff": "BackOffPullImage",
-            # FailedScheduling relates limits
-            "FailedScheduling": "FailedScheduling",
         }
+        # We want to be able to ignore pod scheduling errors as they might be temporary
+        if not os.environ.get("DEIS_IGNORE_SCHEDULING_FAILURE", False):
+            # FailedScheduling relates limits
+            event_errors["FailedScheduling"] = "FailedScheduling"
 
         # Nicer error than from the event
         # Often this gets to ImageBullBackOff before we can introspect tho

@@ -1,13 +1,24 @@
 from datetime import datetime, timedelta
 import json
 import time
+
+from packaging.version import parse
+
 from scheduler.resources import Resource
 from scheduler.exceptions import KubeException, KubeHTTPException
 
 
 class Deployment(Resource):
     api_prefix = 'apis'
-    api_version = 'extensions/v1beta1'
+
+    @property
+    def api_version(self):
+        # API locations have changed since 1.9 and deprecated in 1.16
+        # https://kubernetes.io/blog/2019/07/18/api-deprecations-in-1-16/
+        if self.version() >= parse("1.9.0"):
+            return 'apps/v1'
+
+        return 'extensions/v1beta1'
 
     def get(self, namespace, name=None, **kwargs):
         """
@@ -30,7 +41,7 @@ class Deployment(Resource):
 
         return response
 
-    def manifest(self, namespace, name, image, entrypoint, command, **kwargs):
+    def manifest(self, namespace, name, image, entrypoint, command, spec_annotations, **kwargs):
         replicas = kwargs.get('replicas', 0)
         batches = kwargs.get('deploy_batches', None)
         tags = kwargs.get('tags', {})
@@ -43,7 +54,7 @@ class Deployment(Resource):
 
         manifest = {
             'kind': 'Deployment',
-            'apiVersion': 'extensions/v1beta1',
+            'apiVersion': self.api_version,
             'metadata': {
                 'name': name,
                 'labels': labels,
@@ -104,11 +115,14 @@ class Deployment(Resource):
         # pod manifest spec
         manifest['spec']['template'] = self.pod.manifest(namespace, name, image, **kwargs)
 
+        # set the old deployment spec annotations on this deployment
+        manifest['spec']['template']['metadata']['annotations'] = spec_annotations
+
         return manifest
 
-    def create(self, namespace, name, image, entrypoint, command, **kwargs):
+    def create(self, namespace, name, image, entrypoint, command, spec_annotations, **kwargs):
         manifest = self.manifest(namespace, name, image,
-                                 entrypoint, command, **kwargs)
+                                 entrypoint, command, spec_annotations, **kwargs)
 
         url = self.api("/namespaces/{}/deployments", namespace)
         response = self.http_post(url, json=manifest)
@@ -124,9 +138,14 @@ class Deployment(Resource):
 
         return response
 
-    def update(self, namespace, name, image, entrypoint, command, **kwargs):
+    def update(self, namespace, name, image, entrypoint, command, spec_annotations, **kwargs):
+        # Set the replicas value to the current replicas of the deployment.
+        # This avoids resetting the replicas which causes disruptions during the deployment.
+        deployment = self.deployment.get(namespace, name).json()
+        current_replicas = int(deployment['spec']['replicas'])
+        kwargs['replicas'] = current_replicas
         manifest = self.manifest(namespace, name, image,
-                                 entrypoint, command, **kwargs)
+                                 entrypoint, command, spec_annotations, **kwargs)
 
         url = self.api("/namespaces/{}/deployments/{}", namespace, name)
         response = self.http_put(url, json=manifest)
@@ -263,9 +282,9 @@ class Deployment(Resource):
 
         if (
             'unavailableReplicas' in status or
-            ('replicas' not in status or status['replicas'] is not desired) or
-            ('updatedReplicas' not in status or status['updatedReplicas'] is not desired) or
-            ('availableReplicas' not in status or status['availableReplicas'] is not desired)
+            ('replicas' not in status or status['replicas'] != desired) or
+            ('updatedReplicas' not in status or status['updatedReplicas'] != desired) or
+            ('availableReplicas' not in status or status['availableReplicas'] != desired)
         ):
             return False, pods
 
@@ -366,22 +385,36 @@ class Deployment(Resource):
         Request for new ReplicaSet of Deployment and search for failed events involved by that RS
         Raises: KubeException when RS have events with FailedCreate reason
         """
-        response = self.rs.get(namespace, labels=labels)
-        data = response.json()
-        fields = {
-            'involvedObject.kind': 'ReplicaSet',
-            'involvedObject.name': data['items'][0]['metadata']['name'],
-            'involvedObject.namespace': namespace,
-            'involvedObject.uid': data['items'][0]['metadata']['uid'],
-        }
-        events_list = self.ns.events(namespace, fields=fields).json()
-        events = events_list.get('items', [])
-        if events is not None and len(events) != 0:
-            for event in events:
-                if event['reason'] == 'FailedCreate':
-                    log = self._get_formatted_messages(events)
-                    self.log(namespace, log)
-                    raise KubeException(log)
+        max_retries = 3
+        retry_sleep_sec = 3.0
+        for try_ in range(max_retries):
+            response = self.rs.get(namespace, labels=labels)
+            data = response.json()
+            try:
+                fields = {
+                    'involvedObject.kind': 'ReplicaSet',
+                    'involvedObject.name': data['items'][0]['metadata']['name'],
+                    'involvedObject.namespace': namespace,
+                    'involvedObject.uid': data['items'][0]['metadata']['uid'],
+                }
+            except Exception as e:
+                if try_ + 1 < max_retries:
+                    self.log(namespace,
+                             "Got an empty ReplicaSet list. Trying one more time. {}".format(
+                                 json.dumps(labels)))
+                    time.sleep(retry_sleep_sec)
+                    continue
+                self.log(namespace, "Did not find the ReplicaSet for {}".format(
+                    json.dumps(labels)), "WARN")
+                raise e
+            events_list = self.ns.events(namespace, fields=fields).json()
+            events = events_list.get('items', [])
+            if events is not None and len(events) != 0:
+                for event in events:
+                    if event['reason'] == 'FailedCreate':
+                        log = self._get_formatted_messages(events)
+                        self.log(namespace, log)
+                        raise KubeException(log)
 
     @staticmethod
     def _get_formatted_messages(events):

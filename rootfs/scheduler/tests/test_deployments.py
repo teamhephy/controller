@@ -3,6 +3,9 @@ Unit tests for the Deis scheduler module.
 
 Run the tests with './manage.py test scheduler'
 """
+from unittest import mock
+import copy
+from packaging.version import parse, Version, InvalidVersion
 from scheduler import KubeHTTPException, KubeException
 from scheduler.tests import TestCase
 from scheduler.utils import generate_random_name
@@ -25,6 +28,7 @@ class DeploymentsTest(TestCase):
             'image': 'quay.io/fake/image',
             'entrypoint': 'sh',
             'command': 'start',
+            'spec_annotations': kwargs.get('spec_annotations', {}),
         }
 
         deployment = self.scheduler.deployment.create(namespace, name, **kwargs)
@@ -45,6 +49,7 @@ class DeploymentsTest(TestCase):
             'image': 'quay.io/fake/image',
             'entrypoint': 'sh',
             'command': 'start',
+            'spec_annotations': kwargs.get('spec_annotations', {}),
         }
 
         deployment = self.scheduler.deployment.update(namespace, name, **kwargs)
@@ -70,6 +75,57 @@ class DeploymentsTest(TestCase):
 
         self.scheduler.scale(namespace, name, **kwargs)
         return name
+
+    def test_good_init_api_version(self):
+        try:
+            data = "1.13"
+            Version('{}'.format(data))
+        except InvalidVersion:
+            self.fail("Version {} raised InvalidVersion exception!".format(data))
+
+    def test_bad_init_api_version(self):
+        data = "1.13+"
+        with self.assertRaises(
+            InvalidVersion,
+            msg='packaging.version.InvalidVersion: Invalid version: {}'.format(data)  # noqa
+        ):
+            Version('{}'.format(data))
+
+    def test_deployment_api_version_1_9_and_up(self):
+        cases = ['1.12', '1.11', '1.10', '1.9']
+
+        deployment = copy.copy(self.scheduler.deployment)
+
+        expected = 'apps/v1'
+
+        for canonical in cases:
+            deployment.version = mock.MagicMock(return_value=parse(canonical))
+            actual = deployment.api_version
+            self.assertEqual(
+                expected,
+                actual,
+                "{} breaks - expected {}, got {}".format(
+                    canonical,
+                    expected,
+                    actual))
+
+    def test_deployment_api_version_1_8_and_lower(self):
+        cases = ['1.8', '1.7', '1.6', '1.5', '1.4', '1.3', '1.2']
+
+        deployment = copy.copy(self.scheduler.deployment)
+
+        expected = 'extensions/v1beta1'
+
+        for canonical in cases:
+            deployment.version = mock.MagicMock(return_value=parse(canonical))
+            actual = deployment.api_version
+            self.assertEqual(
+                expected,
+                actual,
+                "{} breaks - expected {}, got {}".format(
+                    canonical,
+                    expected,
+                    actual))
 
     def test_create_failure(self):
         with self.assertRaises(
@@ -102,11 +158,13 @@ class DeploymentsTest(TestCase):
         deployment = self.scheduler.deployment.get(self.namespace, name).json()
         self.assertEqual(deployment['spec']['replicas'], 4, deployment)
 
-        # emulate scale without calling scale
-        self.update(self.namespace, name, replicas=2)
+        # update the version
+        new_version = 'v1024'
+        self.update(self.namespace, name, version=new_version)
 
         deployment = self.scheduler.deployment.get(self.namespace, name).json()
-        self.assertEqual(deployment['spec']['replicas'], 2, deployment)
+        self.assertEqual(deployment['spec']['template']['metadata']['labels']['version'],
+                         new_version, deployment)
 
     def test_delete_failure(self):
         # test failure
@@ -239,6 +297,51 @@ class DeploymentsTest(TestCase):
             },
             data['metadata']['labels'],
             data
+        )
+
+    def test_get_deployment_annotations(self):
+        """
+        Look at the annotations on the Deployment object
+        """
+        # test success
+        kwargs = {
+            'spec_annotations': {'iam.amazonaws.com/role': 'role-arn'},
+        }
+        deployment = self.create(**kwargs)
+        data = self.scheduler.deployment.get(self.namespace, deployment).json()
+
+        self.assertDictContainsSubset(
+            {
+                'iam.amazonaws.com/role': 'role-arn'
+            },
+            data['spec']['template']['metadata']['annotations']
+        )
+
+    def test_get_pod_annotations(self):
+        """
+        Look at the Pod annotations that the Deployment created
+        """
+        kwargs = {
+            'spec_annotations': {
+                'iam.amazonaws.com/role': 'role-arn-pods',
+                'nginx.ingress.kubernetes.io/app-root': '/rootfs',
+                'sidecar.istio.io/inject': 'true'
+            },
+        }
+        deployment = self.create(**kwargs)
+        data = self.scheduler.deployment.get(self.namespace, deployment).json()
+        self.assertEqual(data['kind'], 'Deployment')
+        self.assertEqual(data['metadata']['name'], deployment)
+
+        labels = {'app': self.namespace, 'version': 'v99', 'type': 'web'}
+        pods = self.scheduler.pod.get(self.namespace, labels=labels).json()
+        self.assertDictEqual(
+            {
+                'iam.amazonaws.com/role': 'role-arn-pods',
+                'nginx.ingress.kubernetes.io/app-root': '/rootfs',
+                'sidecar.istio.io/inject': 'true'
+            },
+            pods['items'][0]['metadata']['annotations']
         )
 
     def test_check_for_failed_events(self):
