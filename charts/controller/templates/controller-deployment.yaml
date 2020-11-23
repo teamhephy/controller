@@ -73,6 +73,10 @@ spec:
               value: "{{ .Values.global.registry_location }}"
             - name: "DEIS_REGISTRY_SECRET_PREFIX"
               value: "{{ .Values.global.secret_prefix }}"
+            - name: "GUNICORN_WORKERS"
+              value: "{{ .Values.global.gunicorn_workers }}"
+            - name: "CONN_MAX_AGE"
+              value: "{{ .Values.global.conn_max_age }}"
             - name: "SLUGRUNNER_IMAGE_NAME"
               valueFrom:
                 configMapKeyRef:
