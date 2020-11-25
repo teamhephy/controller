@@ -50,6 +50,7 @@ class Command(BaseCommand):
                 except Exception as error:
                     print('ERROR: There was a problem deploying HPAs for this {} proc_type '
                           'of {} app due to error: {}'.format(proc_type, application, error))
+                    continue
 
         print("Done Publishing DB state to kubernetes.")
 
