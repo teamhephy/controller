@@ -368,7 +368,7 @@ DATABASES = {
         'HOST': os.environ.get('DEIS_DATABASE_SERVICE_HOST', ''),
         'PORT': os.environ.get('DEIS_DATABASE_SERVICE_PORT', 5432),
         # https://docs.djangoproject.com/en/1.11/ref/databases/#persistent-connections
-        'CONN_MAX_AGE': os.environ.get('CONN_MAX_AGE', 600),
+        'CONN_MAX_AGE': int(os.environ.get('CONN_MAX_AGE', 600)),
     }
 }
 
