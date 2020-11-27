@@ -27,6 +27,8 @@ SILENCED_SYSTEM_CHECKS = [
     'security.W008'
 ]
 
+CONN_MAX_AGE = 60 * 3
+
 # SECURITY: change this to allowed fqdn's to prevent host poisioning attacks
 # https://docs.djangoproject.com/en/1.11/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = ['*']
