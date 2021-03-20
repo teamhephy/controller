@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
                 ('updated', models.DateTimeField(auto_now=True)),
                 ('id', models.SlugField(max_length=24, unique=True, null=True, validators=[api.models.validate_app_id, api.models.validate_reserved_names])),
                 ('structure', jsonfield.fields.JSONField(default={}, blank=True, validators=[api.models.validate_app_structure])),
-                ('owner', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('owner', models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
             ],
             options={
                 'permissions': (('use_app', 'Can use app'),),
@@ -39,8 +39,8 @@ class Migration(migrations.Migration):
                 ('sha', models.CharField(max_length=40, blank=True)),
                 ('procfile', jsonfield.fields.JSONField(default={}, blank=True)),
                 ('dockerfile', models.TextField(blank=True)),
-                ('app', models.ForeignKey(to='api.App')),
-                ('owner', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('app', models.ForeignKey(to='api.App', on_delete=models.CASCADE)),
+                ('owner', models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ['-created'],
@@ -58,7 +58,7 @@ class Migration(migrations.Migration):
                 ('key', models.TextField()),
                 ('common_name', models.TextField(unique=True)),
                 ('expires', models.DateTimeField()),
-                ('owner', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('owner', models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
             ],
             options={
                 'abstract': False,
@@ -75,8 +75,8 @@ class Migration(migrations.Migration):
                 ('memory', jsonfield.fields.JSONField(default={}, blank=True)),
                 ('cpu', jsonfield.fields.JSONField(default={}, blank=True)),
                 ('tags', jsonfield.fields.JSONField(default={}, blank=True)),
-                ('app', models.ForeignKey(to='api.App')),
-                ('owner', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('app', models.ForeignKey(to='api.App', on_delete=models.CASCADE)),
+                ('owner', models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ['-created'],
@@ -92,8 +92,8 @@ class Migration(migrations.Migration):
                 ('updated', models.DateTimeField(auto_now=True)),
                 ('type', models.CharField(max_length=128)),
                 ('num', models.PositiveIntegerField()),
-                ('app', models.ForeignKey(to='api.App')),
-                ('owner', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('app', models.ForeignKey(to='api.App', on_delete=models.CASCADE)),
+                ('owner', models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ['created'],
@@ -108,8 +108,8 @@ class Migration(migrations.Migration):
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('updated', models.DateTimeField(auto_now=True)),
                 ('domain', models.TextField(unique=True)),
-                ('app', models.ForeignKey(to='api.App')),
-                ('owner', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('app', models.ForeignKey(to='api.App', on_delete=models.CASCADE)),
+                ('owner', models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
             ],
             options={
                 'abstract': False,
@@ -125,7 +125,7 @@ class Migration(migrations.Migration):
                 ('id', models.CharField(max_length=128)),
                 ('public', models.TextField(unique=True, validators=[api.models.validate_base64])),
                 ('fingerprint', models.CharField(max_length=128)),
-                ('owner', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('owner', models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
             ],
             options={
                 'verbose_name': 'SSH Key',
@@ -144,8 +144,8 @@ class Migration(migrations.Migration):
                 ('receive_repo', models.CharField(max_length=255)),
                 ('ssh_connection', models.CharField(max_length=255)),
                 ('ssh_original_command', models.CharField(max_length=255)),
-                ('app', models.ForeignKey(to='api.App')),
-                ('owner', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('app', models.ForeignKey(to='api.App', on_delete=models.CASCADE)),
+                ('owner', models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ['-created'],
@@ -161,10 +161,10 @@ class Migration(migrations.Migration):
                 ('updated', models.DateTimeField(auto_now=True)),
                 ('version', models.PositiveIntegerField()),
                 ('summary', models.TextField(null=True, blank=True)),
-                ('app', models.ForeignKey(to='api.App')),
-                ('build', models.ForeignKey(to='api.Build', null=True)),
-                ('config', models.ForeignKey(to='api.Config')),
-                ('owner', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('app', models.ForeignKey(to='api.App', on_delete=models.CASCADE)),
+                ('build', models.ForeignKey(to='api.Build', null=True, on_delete=models.CASCADE)),
+                ('config', models.ForeignKey(to='api.Config', on_delete=models.CASCADE)),
+                ('owner', models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ['-created'],
@@ -187,7 +187,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='container',
             name='release',
-            field=models.ForeignKey(to='api.Release'),
+            field=models.ForeignKey(to='api.Release', on_delete=models.CASCADE),
             preserve_default=True,
         ),
         migrations.AlterUniqueTogether(

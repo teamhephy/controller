@@ -148,8 +148,9 @@ class Certificate(AuditedModel):
         subject = certificate.get_subject().get_components()
         self.subject = '/' + '/'.join('%s=%s' % (key.decode(encoding='UTF-8'), value.decode(encoding='UTF-8')) for key, value in subject)  # noqa
 
-        # public fingerprint of certificate
-        self.fingerprint = certificate.digest('sha256')
+        # public fingerprint of certificate - need to decode to UTF-8 in pyOpenSSL
+        # Convert bytes to string
+        self.fingerprint = certificate.digest('sha256').decode(encoding='UTF-8')
 
         # SubjectAltName from the certificate - return a list
         self.san = get_subj_alt_name(certificate)
