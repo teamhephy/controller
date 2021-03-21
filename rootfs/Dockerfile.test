@@ -1,4 +1,4 @@
-FROM hephy/base:v0.4.1
+FROM hephy/base:latest
 
 RUN adduser --system \
 	--shell /bin/bash \
@@ -18,11 +18,17 @@ RUN buildDeps='gcc libffi-dev libpq-dev libldap2-dev libsasl2-dev python3-dev py
         libpq5 \
         libldap-2.4 \
         python3-minimal \
-        # cryptography package needs pkg_resources
-        python3-pkg-resources && \
+				python3-distutils \
+				# cryptography package needs pkg_resources
+				python3-pkg-resources && \
     ln -s /usr/bin/python3 /usr/bin/python && \
+		# use python3 to upgrade pip and tools
+		python3 -m pip install --upgrade --no-cache-dir \
+				pip \
+				setuptools \
+				wheel && \
     mkdir -p /configs && chown -R deis:deis /configs && \
-    pip3 install --disable-pip-version-check --no-cache-dir -r /app/requirements.txt && \
+    python3 -m pip install --disable-pip-version-check --no-cache-dir -r /app/requirements.txt && \
     # cleanup
     apt-get purge -y --auto-remove $buildDeps && \
     apt-get autoremove -y && \
@@ -54,10 +60,7 @@ RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         git \
         postgresql \
-        postgresql-contrib \
-        python3-pip \
-        python3-setuptools \
-        python3-wheel && \
+        postgresql-contrib && \
     pip3 install --disable-pip-version-check --no-cache-dir -r dev_requirements.txt && \
     sudo -u postgres -E $PGBIN/initdb
 

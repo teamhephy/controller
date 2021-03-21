@@ -1,4 +1,4 @@
-FROM hephy/base:v0.4.1
+FROM hephy/base:latest
 
 RUN adduser --system \
 	--shell /bin/bash \
@@ -21,8 +21,13 @@ RUN buildDeps='gcc libffi-dev libpq-dev libldap2-dev libsasl2-dev python3-dev py
         # cryptography package needs pkg_resources
         python3-pkg-resources && \
     ln -s /usr/bin/python3 /usr/bin/python && \
+		# use python3 to upgrade pip and tools
+		python3 -m pip install --upgrade --no-cache-dir \
+				pip \
+				setuptools \
+				wheel && \
     mkdir -p /configs && chown -R deis:deis /configs && \
-    pip3 install --disable-pip-version-check --no-cache-dir -r /app/requirements.txt && \
+    python3 -m pip install --disable-pip-version-check --no-cache-dir -r /app/requirements.txt && \
     # cleanup
     apt-get purge -y --auto-remove $buildDeps && \
     apt-get autoremove -y && \
