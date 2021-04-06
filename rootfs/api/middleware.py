@@ -5,6 +5,7 @@ See https://docs.djangoproject.com/en/1.11/topics/http/middleware/
 """
 
 from api import __version__
+from api import __sso_provider__
 
 
 class APIVersionMiddleware(object):
@@ -25,4 +26,5 @@ class APIVersionMiddleware(object):
         version = __version__.rsplit('.', 1)[0]
         response['DEIS_API_VERSION'] = version
         response['DEIS_PLATFORM_VERSION'] = __version__
+        response['EYK_PROVIDER'] = 
         return response
