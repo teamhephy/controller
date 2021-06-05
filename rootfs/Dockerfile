@@ -1,13 +1,13 @@
 FROM hephy/base:latest
 
 RUN adduser --system \
-	--shell /bin/bash \
-	--disabled-password \
-	--home /app \
-	--group \
-	deis
+    --shell /bin/bash \
+    --disabled-password \
+    --home /app \
+    --group \
+    deis
 
-COPY requirements.txt /app/requirements.txt
+COPY Pipfile* /app/
 
 RUN buildDeps='gcc libffi-dev libpq-dev libldap2-dev libsasl2-dev python3-dev python3-pip python3-wheel python3-setuptools'; \
     apt-get update && \
@@ -18,16 +18,18 @@ RUN buildDeps='gcc libffi-dev libpq-dev libldap2-dev libsasl2-dev python3-dev py
         libldap-2.4 \
         python3-minimal \
         python3-distutils \
+        python3-packaging \
         # cryptography package needs pkg_resources
         python3-pkg-resources && \
     ln -s /usr/bin/python3 /usr/bin/python && \
-		# use python3 to upgrade pip and tools
-		python3 -m pip install --upgrade --no-cache-dir \
-				pip \
-				setuptools \
-				wheel && \
+    # use python3 to upgrade pip and tools
+    python3 -m pip install --upgrade --no-cache-dir \
+    pip \
+    setuptools \
+    wheel && \
     mkdir -p /configs && chown -R deis:deis /configs && \
-    python3 -m pip install --disable-pip-version-check --no-cache-dir -r /app/requirements.txt && \
+    python3 -m pip install --disable-pip-version-check --no-cache-dir pipenv && \
+    pipenv install --deploy --system --ignore-pipfile && \
     # cleanup
     apt-get purge -y --auto-remove $buildDeps && \
     apt-get autoremove -y && \
