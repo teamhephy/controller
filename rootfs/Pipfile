@@ -1,0 +1,44 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+# Deis controller requirements
+backoff = "==1.8.0"
+django-auth-ldap = "==2.3.0"
+django-cors-middleware = "==1.5.0"
+django-guardian = "==2.3.0"
+djangorestframework = "<4.0,==3.12.2"
+docker-py = "==1.10.6"
+gunicorn = ">=20.0.4"
+idna = ">=2.6"
+jmespath = ">=0.10.0"
+jsonfield = ">=3.1.0"
+jsonschema = ">=3.2.0"
+morph = "==0.1.4"
+ndg-httpsclient = "==0.5.1"
+pyasn1 = "==0.4.8"
+psycopg2-binary = "==2.8.6"
+pyldap = "==3.0.0"
+pytz = ">=2021.1"
+requests = ">=2.25.1"
+requests-toolbelt = ">=0.9.1"
+Django = ">=2.2.20,<3.0"
+pyOpenSSL = "==20.0.1"
+
+[dev-packages]
+# Run "make test-unit" for the % of code exercised during tests
+coverage = "==4.5.4"
+# Run "make test-style" to check python syntax and style
+flake8 = "==3.4.1"
+# code coverage report at https://codecov.io/github/teamhephy/controller
+codecov = "==2.1.11"
+# mock out python-requests, mostly k8s
+# requests-mock==1.3.0
+requests-mock = {ref = "class_adapter", git = "https://github.com/teamhephy/requests-mock.git"}
+# tail a log and pipe into tbgrep to find all tracebacks
+tbgrep = "==0.3.0"
+
+[requires]
+python_version = "3.9"
