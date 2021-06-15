@@ -14,7 +14,7 @@ class Consolerole(Resource):
                 "namespace": "{}".format(namespace)
             },
             "secrets:": [{
-                "name" : "deis-console-{}".format(namespace)
+                "name": "deis-console-{}".format(namespace)
             }],
         }
 
@@ -52,18 +52,25 @@ class Consolerole(Resource):
         if response.status_code == 409:
             return response
         if not response.status_code == 201:
-            raise KubeHTTPException(response, "create ServiceAccount {}".format(namespace))
+            raise KubeHTTPException(
+                response, "create ServiceAccount {}".format(namespace)
+            )
 
         return response
 
     def create(self, namespace):
         self._create_service_account(namespace)
-        url = "/apis/rbac.authorization.k8s.io/v1/namespaces/{}/rolebindings".format(namespace)
+        url = (
+            "/apis/rbac.authorization.k8s.io/v1"
+            "/namespaces/{}/rolebindings"
+            ).format(namespace)
         manifest = self._role_binding_manifest(namespace)
         response = self.http_post(url, json=manifest)
         if response.status_code == 409:
             return response
         if not response.status_code == 201:
-            raise KubeHTTPException(response, "create RoleBinding for {}".format(namespace))
+            raise KubeHTTPException(
+                response, "create RoleBinding for {}".format(namespace)
+            )
 
         return response

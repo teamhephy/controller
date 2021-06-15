@@ -421,5 +421,7 @@ if LDAP_ENDPOINT:
     AUTH_LDAP_FIND_GROUP_PERMS = True
     AUTH_LDAP_CACHE_GROUPS = False
 
-CONTAINER_CONSOLE_ENABLED = bool(strtobool(os.environ.get('CONTAINER_CONSOLE_ENABLED', 'true')))
-K8S_API_ENDPOINT = os.environ.get('K8S_API_ENDPOINT', '127.0.0.1:80')
+CONTAINER_CONSOLE_ENABLED = bool(
+    strtobool(os.environ.get('CONTAINER_CONSOLE_ENABLED', 'true'))
+    )
+K8S_API_ENDPOINT = os.environ.get('K8S_API_ENDPOINT', 'https://127.0.0.1:443')
