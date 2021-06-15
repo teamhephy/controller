@@ -19,6 +19,10 @@ k8s_api_verify_tls: "true"
 # This will be the hostname that is used to build endpoints such as "deis.$HOSTNAME"
 platform_domain: ""
 
+container_console:
+  enabled: "true"
+  k8s_api_endpoint: https://127.0.0.1:443
+
 global:
   # Set the storage backend
   #

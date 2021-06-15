@@ -1,0 +1,15 @@
+{{- if (.Values.global.use_rbac) -}}
+{{- if (.Capabilities.APIVersions.Has (include "rbacAPIVersion" .)) -}}
+kind: ClusterRole
+apiVersion: {{ template "rbacAPIVersion" . }}
+metadata:
+  name: deis:deis-console
+  labels:
+    app: deis-console
+    heritage: deis
+rules:
+- apiGroups: [""]
+  resources: ["pods/exec"]
+  verbs: ["get", "create", "list"]
+{{- end -}}
+{{- end -}}

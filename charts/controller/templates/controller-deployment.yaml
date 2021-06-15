@@ -77,6 +77,10 @@ spec:
               value: "{{ .Values.global.gunicorn_workers }}"
             - name: "CONN_MAX_AGE"
               value: "{{ .Values.global.conn_max_age }}"
+            - name: "CONTAINER_CONSOLE_ENABLED"
+              value: "{{ .Values.container_console.enabled }}"
+            - name: "K8S_API_ENDPOINT"
+              value: "{{ .Values.container_console.k8s_api_endpoint }}"
             - name: "SLUGRUNNER_IMAGE_NAME"
               valueFrom:
                 configMapKeyRef:

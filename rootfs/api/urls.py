@@ -80,6 +80,9 @@ urlpatterns = [
         views.AppViewSet.as_view({'get': 'retrieve', 'post': 'update', 'delete': 'destroy'})),
     url(r'^apps/?$',
         views.AppViewSet.as_view({'get': 'list', 'post': 'create'})),
+    # application console token
+	url(r"^apps/(?P<id>{})/console-token".format(settings.APP_URL_REGEX),
+		views.AppViewSet.as_view({'get': 'console_token'})),
     # key
     url(r'^keys/(?P<id>.+)/?$',
         views.KeyViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})),
