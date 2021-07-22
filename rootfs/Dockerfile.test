@@ -56,7 +56,7 @@ RUN buildDeps='gcc libffi-dev libpq-dev libldap2-dev libsasl2-dev python3-dev py
 WORKDIR /app
 
 # test-unit additions to the main Dockerfile
-ENV PGBIN=/usr/lib/postgresql/10/bin PGDATA=/var/lib/postgresql/data LC_ALL=C.UTF-8 LANG=C.UTF-8
+ENV PGBIN=/usr/lib/postgresql/12/bin PGDATA=/var/lib/postgresql/data LC_ALL=C.UTF-8 LANG=C.UTF-8
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         git \

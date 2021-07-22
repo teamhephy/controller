@@ -31,7 +31,7 @@ pyOpenSSL = "==20.0.1"
 # Run "make test-unit" for the % of code exercised during tests
 coverage = "==4.5.4"
 # Run "make test-style" to check python syntax and style
-flake8 = "==3.4.1"
+flake8 = "==3.9.0"
 # code coverage report at https://codecov.io/github/teamhephy/controller
 codecov = "==2.1.11"
 # mock out python-requests, mostly k8s
