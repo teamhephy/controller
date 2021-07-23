@@ -87,7 +87,7 @@ class Service(AuditedModel):
 
         try:
             service = self._fetch_service_config(namespace, svc_name)
-        except (ServiceUnavailable, KubeException) as e:
+        except (ServiceUnavailable, KubeException):
             # ignore non-existing services
             return
 

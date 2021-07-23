@@ -620,7 +620,7 @@ def prepare_query_filters(query):
     filters = {'labels': {}, 'fields': {}}
     if query:
         # set based regex - does not support only field
-        labelRegex = re.compile('^(?P<label>.*) (?P<matcher>notin|in)\s?\((?P<values>.*)\)$')
+        labelRegex = re.compile(r'^(?P<label>.*) (?P<matcher>notin|in)\s?\((?P<values>.*)\)$')
 
         queries = parse_qs(query)
         if 'labelSelector' in queries:

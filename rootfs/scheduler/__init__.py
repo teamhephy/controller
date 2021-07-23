@@ -86,7 +86,7 @@ class KubeHTTPClient(object):
 
         data = response.json()
         parsed_version = parse(
-            re.sub("[^0-9\.]", '', str('{}.{}'.format(data['major'], data['minor']))))
+            re.sub(r'[^0-9\.]', '', str('{}.{}'.format(data['major'], data['minor']))))
         return Version('{}'.format(parsed_version))
 
     @staticmethod

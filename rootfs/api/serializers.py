@@ -499,7 +499,7 @@ class ServiceSerializer(serializers.ModelSerializer):
                     "Service value should be valid regex (or set of regex split by comma)")
             try:
                 re.compile(pattern)
-            except re.error as e:
+            except re.error:
                 raise serializers.ValidationError(
                     "Service value should be valid regex (or set of regex split by comma)")
 
@@ -555,13 +555,13 @@ class AppSettingsSerializer(serializers.ModelSerializer):
         for address in data:
             try:
                 ipaddress.ip_address(address)
-            except:
+            except Exception:
                 try:
                     ipaddress.ip_network(address)
-                except:
+                except Exception:
                     try:
                         ipaddress.ip_interface(address)
-                    except:
+                    except Exception:
                         raise serializers.ValidationError(
                            "The address {} is not valid".format(address))
 
