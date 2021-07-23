@@ -817,7 +817,7 @@ class App(UuidAuditedModel):
             # sorting so latest start date is first
             data.sort(key=lambda x: x['started'], reverse=True)
             return data
-        except KubeHTTPException as e:
+        except KubeHTTPException:
             pass
         except Exception as e:
             err = '(list pods): {}'.format(e)

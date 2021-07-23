@@ -613,7 +613,7 @@ class Pod(Resource):
         if getattr(self, '_handle_long_image_pulling_applied', False):
             return 0
 
-        if reason is not 'Pulling':
+        if reason != 'Pulling':
             return 0
 
         # last event should be Pulling in this case

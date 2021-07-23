@@ -35,7 +35,7 @@ class Command(BaseCommand):
                 application.deploy(rel)
             except AlreadyExists as error:
                 print('WARNING: {} has a deployment in progress. '
-                      'Skipping deployment...'.format(application))
+                      'Skipping deployment... due to {}'.format(application, str(error)))
                 continue
             except DeisException as error:
                 print('ERROR: There was a problem deploying {} '

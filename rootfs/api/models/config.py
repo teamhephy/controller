@@ -99,7 +99,7 @@ class Config(UuidAuditedModel):
                 try:
                     tags = json.loads(settings.DEIS_DEFAULT_CONFIG_TAGS)
                     self.tags = tags
-                except json.JSONDecodeError as e:
+                except json.JSONDecodeError:
                     return
             else:
                 return

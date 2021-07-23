@@ -20,5 +20,5 @@ class AnonymousOrAuthenticatedAuthentication(authentication.BaseAuthentication):
         """
         try:
             return TokenAuthentication.authenticate(TokenAuthentication(), request)
-        except:
+        except Exception:
             return AnonymousUser(), None

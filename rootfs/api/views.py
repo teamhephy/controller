@@ -367,7 +367,7 @@ class DomainViewSet(AppResourceViewSet):
                 ace_domain = "*." + idna.encode(domain[2:]).decode("utf-8", "strict")
             else:
                 ace_domain = idna.encode(domain).decode("utf-8", "strict")
-        except:
+        except Exception:
             ace_domain = domain
         return get_object_or_404(qs, domain=ace_domain)
 
