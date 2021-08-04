@@ -10,10 +10,10 @@ class Ingress(Resource):
         Fetch a single Ingress or a list of Ingresses
         """
         if name is not None:
-            url = "/apis/extensions/v1beta1/namespaces/%s/ingresses/%s" % (name, name)
+            url = "/apis/networking.k8s.io/v1/namespaces/%s/ingresses/%s" % (name, name)
             message = 'get Ingress ' + name
         else:
-            url = "/apis/extensions/v1beta1/namespaces/%s/ingresses" % name
+            url = "/apis/networking.k8s.io/v1/namespaces/%s/ingresses" % name
             message = 'get Ingresses'
 
         response = self.http_get(url, params=self.query_params(**kwargs))
@@ -23,13 +23,11 @@ class Ingress(Resource):
         return response
 
     def create(self, ingress, namespace, hostname):
-        # Ingress API will be deprecated in 1.20 to use networking.k8s.io/v1beta1
-        # https://kubernetes.io/blog/2019/07/18/api-deprecations-in-1-16/
-        url = "/apis/extensions/v1beta1/namespaces/%s/ingresses" % namespace
+        url = "/apis/networking.k8s.io/v1/namespaces/%s/ingresses" % namespace
 
         data = {
             "kind": "Ingress",
-            "apiVersion": "extensions/v1beta1",
+            "apiVersion": "networking.k8s.io/v1",
             "metadata": {
                 "name": ingress
             },
@@ -39,9 +37,14 @@ class Ingress(Resource):
                      "http": {
                          "paths": [
                              {"path": "/",
+                              "pathType": "Prefix",
                               "backend": {
-                                  "serviceName": ingress,
-                                  "servicePort": 80
+                                  "service": {
+                                      "name": ingress,
+                                      "port": {
+                                          "number": 80
+                                      }
+                                  }
                               }}
                          ]
                      }
@@ -57,7 +60,7 @@ class Ingress(Resource):
         return response
 
     def delete(self, namespace, ingress):
-        url = "/apis/extensions/v1beta1/namespaces/%s/ingresses/%s" % (namespace, ingress)
+        url = "/apis/networking.k8s.io/v1/namespaces/%s/ingresses/%s" % (namespace, ingress)
         response = self.http_delete(url)
         if self.unhealthy(response.status_code):
             raise KubeHTTPException(response, 'delete Ingress "{}"', namespace)
