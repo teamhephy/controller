@@ -7,7 +7,10 @@ RUN adduser --system \
     --group \
     deis
 
-COPY Pipfile* /app/
+COPY . /app
+
+# define execution environment
+WORKDIR /app
 
 RUN buildDeps='gcc libffi-dev libpq-dev libldap2-dev libsasl2-dev python3-dev python3-pip python3-wheel python3-setuptools'; \
     apt-get update && \
@@ -21,7 +24,7 @@ RUN buildDeps='gcc libffi-dev libpq-dev libldap2-dev libsasl2-dev python3-dev py
         python3-packaging \
         # cryptography package needs pkg_resources
         python3-pkg-resources && \
-    ln -s /usr/bin/python3 /usr/bin/python && \
+    ln -s -f /usr/bin/python3 /usr/bin/python && \
     # use python3 to upgrade pip and tools
     python3 -m pip install --upgrade --no-cache-dir \
     pip \
@@ -52,9 +55,5 @@ RUN buildDeps='gcc libffi-dev libpq-dev libldap2-dev libsasl2-dev python3-dev py
         /usr/lib/x86_64-linux-gnu/gconv/EBC* && \
     bash -c "mkdir -p /usr/share/man/man{1..8}"
 
-COPY . /app
-
-# define execution environment
-WORKDIR /app
 CMD ["/app/bin/boot"]
 EXPOSE 8000
