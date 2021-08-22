@@ -19,8 +19,8 @@ RUN buildDeps='gcc libffi-dev libpq-dev libldap2-dev libsasl2-dev python3-dev py
         python3-minimal \
         python3-distutils \
         python3-packaging \
-    # cryptography package needs pkg_resources
-    python3-pkg-resources && \
+        # cryptography package needs pkg_resources
+        python3-pkg-resources && \
     ln -s /usr/bin/python3 /usr/bin/python && \
     # use python3 to upgrade pip and tools
     python3 -m pip install --upgrade --no-cache-dir \
