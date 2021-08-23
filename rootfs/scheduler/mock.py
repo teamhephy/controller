@@ -124,6 +124,7 @@ def get_namespace(url, resource_type):
     # correct back to proper namespace API
     url = url.replace('apis_autoscaling_v1', 'api_v1')
     url = url.replace('apis_extensions_v1beta1', 'api_v1')
+    url = url.replace('apis_networking.k8s.io_v1', 'api_v1')
     # check if this is a subresource
     subresource, resource_type, url = is_subresource(resource_type, url)
     # get namespace name
@@ -692,7 +693,7 @@ def post(request, context):
     # don't bother adding it to those two resources since they live outside namespace
     if resource_type not in ['nodes', 'namespaces']:
         namespace = request.url.replace(settings.SCHEDULER_URL + '/api/v1/namespaces/',  '')
-        namespace = namespace.replace(settings.SCHEDULER_URL + '/apis/extensions/v1beta1/namespaces/',  '')  # noqa
+        namespace = namespace.replace(settings.SCHEDULER_URL + '/apis/networking.k8s.io/v1/namespaces/',  '')  # noqa
         namespace = namespace.split('/')[0]
         data['metadata']['namespace'] = namespace
 

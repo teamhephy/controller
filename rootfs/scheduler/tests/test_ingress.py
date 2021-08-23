@@ -35,7 +35,7 @@ class IngressTest(TestCase):
         data = response.json()
 
         self.assertEqual(response.status_code, 200, data)
-        self.assertEqual(data['apiVersion'], 'extensions/v1beta1')
+        self.assertEqual(data['apiVersion'], 'networking.k8s.io/v1')
         self.assertEqual(data['kind'], 'Ingress')
 
     def test_delete_failure(self):
