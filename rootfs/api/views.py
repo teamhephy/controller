@@ -52,6 +52,14 @@ class LivenessCheckView(View):
         return HttpResponse("OK")
     head = get
 
+class ResponseWithCallback(Response):
+    def __init__(self, data, then_callback, **kwargs):
+        super().__init__(data, **kwargs)
+        self.then_callback = then_callback
+
+    def close(self):
+        super().close()
+        self.then_callback()
 
 class UserRegistrationViewSet(GenericViewSet,
                               mixins.CreateModelMixin):
@@ -300,12 +308,16 @@ class AppViewSet(BaseDeisViewSet):
                 ][0]['data']['token']
         except (KeyError, IndexError):
             return Response({"error": True, "msg": "Could not retrieve token"})
-        return Response(
-            {
+        
+        rsp = {
                 'apiEndpoint': settings.K8S_API_ENDPOINT,
+                'websocketTimeout' : int(settings.CONTAINER_CONSOLE_WEBSOCKET_TIMEOUT),
                 'token': token, "error": False
             }
-            )
+        def execute_after():
+            app._scheduler.consolerole.refresh_service_account_token(self.kwargs["id"])
+
+        return ResponseWithCallback(rsp, execute_after, status=status.HTTP_200_OK)
 
 
 class BuildViewSet(ReleasableViewSet):
