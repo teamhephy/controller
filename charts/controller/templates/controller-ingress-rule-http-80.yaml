@@ -9,6 +9,9 @@ metadata:
     release: "{{ .Release.Name }}"
     heritage: "{{ .Release.Service }}"
 spec:
+{{- if .Values.ingress_class }}
+  ingressClassName: {{ .Values.ingress_class }}
+{{- end }}
   rules:
   - host: deis.{{ .Values.platform_domain }}
     http:

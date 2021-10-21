@@ -18,6 +18,8 @@ k8s_api_verify_tls: "true"
 #
 # This will be the hostname that is used to build endpoints such as "deis.$HOSTNAME"
 platform_domain: ""
+# Set a value for ingressClassName, if IngressClass is needed.
+ingress_class: ""
 
 global:
   # Set the storage backend
