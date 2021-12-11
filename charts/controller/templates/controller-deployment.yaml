@@ -21,6 +21,10 @@ spec:
       labels:
         app: deis-controller
     spec:
+{{- with .Values.global.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+{{- end }}
       serviceAccount: deis-controller
       containers:
         - name: deis-controller
