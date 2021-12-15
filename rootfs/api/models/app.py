@@ -228,6 +228,18 @@ class App(UuidAuditedModel):
             raise ServiceUnavailable('Kubernetes resources could not be created') from e
 
         try:
+            # Create the console resources
+            self.log(
+                'creating Console Role for namespace {}'.format(namespace),
+                level=logging.DEBUG
+                )
+            self._scheduler.consolerole.create(namespace)
+        except KubeException as e:
+            raise ServiceUnavailable(
+                'Could not create Console Role in Namespace {}'
+                .format(namespace)) from e
+
+        try:
             # In order to create an ingress, we must first have a namespace.
             if settings.EXPERIMENTAL_NATIVE_INGRESS:
                 if ingress == "":

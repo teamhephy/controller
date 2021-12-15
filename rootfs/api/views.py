@@ -19,6 +19,7 @@ from rest_framework.authtoken.models import Token
 from api import authentication, models, permissions, serializers, viewsets
 from api.models import AlreadyExists, ServiceUnavailable, DeisException, UnprocessableEntity
 
+from json import loads as json_loads
 import logging
 
 logger = logging.getLogger(__name__)
@@ -51,6 +52,14 @@ class LivenessCheckView(View):
         return HttpResponse("OK")
     head = get
 
+class ResponseWithCallback(Response):
+    def __init__(self, data, then_callback, **kwargs):
+        super().__init__(data, **kwargs)
+        self.then_callback = then_callback
+
+    def close(self):
+        super().close()
+        self.then_callback()
 
 class UserRegistrationViewSet(GenericViewSet,
                               mixins.CreateModelMixin):
@@ -257,6 +266,58 @@ class AppViewSet(BaseDeisViewSet):
                 downstream_model.objects.filter(owner=old_owner, app=app).update(owner=new_owner)
         app.save()
         return Response(status=status.HTTP_200_OK)
+
+    def console_token(self, request, **kwargs):
+        if settings.CONTAINER_CONSOLE_ENABLED is not True:
+            return Response(
+                {
+                    "error": True,
+                    "msg": "console feature not enabled on this cluster"
+                }
+                )
+        try:
+            app = get_object_or_404(models.App, id=self.kwargs["id"])
+        except Http404:
+            return Response(
+                {
+                    "error": True,
+                    "msg": "Application '{}' not found"
+                    .format(self.kwargs["id"])
+                }
+                )
+        app.log(
+            "User {} requested console access to {}"
+            .format(self.request.user, self.kwargs["id"])
+            )
+        self.check_object_permissions(self.request, app)
+        try:
+            parsed_secrets = json_loads(
+                app._scheduler.secret.get(self.kwargs["id"]).content
+                )["items"]
+        except ValueError:
+            return Response(
+                {
+                    "error": True,
+                    "msg": "Could not retrieve json that includes token"
+                }
+                )
+        try:
+            token = [
+                x for x in parsed_secrets
+                if x['metadata']['name'].startswith("deis-console-")
+                ][0]['data']['token']
+        except (KeyError, IndexError):
+            return Response({"error": True, "msg": "Could not retrieve token"})
+        
+        rsp = {
+                'apiEndpoint': settings.K8S_API_ENDPOINT,
+                'websocketTimeout' : int(settings.CONTAINER_CONSOLE_WEBSOCKET_TIMEOUT),
+                'token': token, "error": False
+            }
+        def execute_after():
+            app._scheduler.consolerole.refresh_service_account_token(self.kwargs["id"])
+
+        return ResponseWithCallback(rsp, execute_after, status=status.HTTP_200_OK)
 
 
 class BuildViewSet(ReleasableViewSet):
