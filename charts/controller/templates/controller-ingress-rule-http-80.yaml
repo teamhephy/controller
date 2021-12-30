@@ -1,8 +1,7 @@
 {{ if .Values.global.experimental_native_ingress }}
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  namespace: "{{ .Release.Namespace }}"
   name: "controller-api-server-ingress-http"
   labels:
     app: "controller"
@@ -10,12 +9,18 @@ metadata:
     release: "{{ .Release.Name }}"
     heritage: "{{ .Release.Service }}"
 spec:
+{{- if .Values.ingress_class }}
+  ingressClassName: {{ .Values.ingress_class }}
+{{- end }}
   rules:
   - host: deis.{{ .Values.platform_domain }}
     http:
       paths:
       - path: /
+        pathType: Prefix
         backend:
-          serviceName: deis-controller
-          servicePort: 80
+          service:
+            name: deis-controller
+            port:
+              number: 80
 {{- end }}
