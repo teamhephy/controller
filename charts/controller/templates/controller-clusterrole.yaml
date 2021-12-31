@@ -50,7 +50,7 @@ rules:
 - apiGroups: ["extensions", "autoscaling"]
   resources: ["horizontalpodautoscalers"]
   verbs: ["get", "list", "create", "update", "delete"]
-{{ if .Values.global.experimental_native_ingress }}
+{{ if .Values.global.native_ingress }}
 - apiGroups: ["networking.k8s.io"]
   resources: ["ingresses"]
   verbs: ["get", "list", "watch", "create", "update", "delete"]

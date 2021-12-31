@@ -229,7 +229,7 @@ class App(UuidAuditedModel):
 
         try:
             # In order to create an ingress, we must first have a namespace.
-            if settings.EXPERIMENTAL_NATIVE_INGRESS:
+            if settings.NATIVE_INGRESS:
                 if ingress == "":
                     raise ServiceUnavailable('Empty hostname')
                 try:
@@ -238,7 +238,7 @@ class App(UuidAuditedModel):
                     self.log("creating Ingress {}".format(namespace), level=logging.INFO)
                     self._scheduler.ingress.create(ingress,
                                                    namespace,
-                                                   settings.EXPERIMENTAL_NATIVE_INGRESS_HOSTNAME)
+                                                   settings.NATIVE_INGRESS_HOSTNAME)
         except KubeException as e:
             raise ServiceUnavailable('Could not create Ingress in Kubernetes') from e
         try:
