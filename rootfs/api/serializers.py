@@ -21,7 +21,7 @@ from api import models
 PROCTYPE_MATCH = re.compile(r'^(?P<type>[a-z0-9]+(\-[a-z0-9]+)*)$')
 PROCTYPE_MISMATCH_MSG = "Process types can only contain lowercase alphanumeric characters"
 MEMLIMIT_MATCH = re.compile(
-    r'^(?P<mem>(([0-9]+(MB|KB|GB|[BKMG])|0)(/([0-9]+(MB|KB|GB|[BKMG])))?))$', re.IGNORECASE)
+    r'^(?P<mem>(([0-9]+(M|K|G|[BKMG])|0)(/([0-9]+(M|K|G|[BKMG])))?))$', re.IGNORECASE)
 CPUSHARE_MATCH = re.compile(
     r'^(?P<cpu>(([-+]?[0-9]*\.?[0-9]+[m]?)(/([-+]?[0-9]*\.?[0-9]+[m]?))?))$')
 TAGVAL_MATCH = re.compile(r'^(?:[a-zA-Z\d][-\.\w]{0,61})?[a-zA-Z\d]$')
