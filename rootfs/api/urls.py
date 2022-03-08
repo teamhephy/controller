@@ -71,7 +71,7 @@ urlpatterns = [
     url(r"^apps/(?P<id>{})/tls/?$".format(settings.APP_URL_REGEX),
         views.TLSViewSet.as_view({'get': 'retrieve', 'post': 'create'})),
     # apps sharing
-    url(r"^apps/(?P<id>{})/perms/(?P<username>[-_\w]+)/?$".format(settings.APP_URL_REGEX),
+    url(r"^apps/(?P<id>{})/perms/(?P<username>[-_\w.@+]+)/?$".format(settings.APP_URL_REGEX),
         views.AppPermsViewSet.as_view({'delete': 'destroy'})),
     url(r"^apps/(?P<id>{})/perms/?$".format(settings.APP_URL_REGEX),
         views.AppPermsViewSet.as_view({'get': 'list', 'post': 'create'})),
