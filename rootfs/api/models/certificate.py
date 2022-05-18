@@ -18,6 +18,7 @@ from api.models.domain import Domain
 
 from scheduler import KubeException
 
+import gc
 import logging
 logger = logging.getLogger(__name__)
 
@@ -78,6 +79,30 @@ def validate_private_key(value):
         raise ValidationError('Could not load private key: {}'.format(e))
 
 
+def validate_cert_pair(certificate, private_key):
+    # Load and validate the certificate and private key
+    try:
+        cert = validate_certificate(certificate)
+        pkey = validate_private_key(private_key)
+    except ValidationError as e:
+        # The certificate and key should already have been validated
+        raise SuspiciousOperation(e)
+
+    if pkey.type() == crypto.TYPE_RSA:
+        # Compare modulus n, to the factors p and q
+        priv_numbers = pkey.to_cryptography_key().private_numbers()
+        pub_modulus = cert.get_pubkey().to_cryptography_key().public_numbers().n
+        if pub_modulus != (priv_numbers.p * priv_numbers.q):
+            raise ValidationError('Certificate and private key do not match!')
+
+    # Remove pkey from memory as it is no longer needed
+    del pkey, priv_numbers, pub_modulus
+    gc.collect()
+
+    # Return certificate if everything went ok
+    return cert
+
+
 class Certificate(AuditedModel):
     """
     Public and private key pair used to secure application traffic at the router.
@@ -114,13 +139,9 @@ class Certificate(AuditedModel):
         return self.name
 
     def save(self, *args, **kwargs):
-        try:
-            certificate = validate_certificate(self.certificate)
-            # NOTE(bacongobbler): we want to load the key here to ensure that it is valid before
-            # saving it to the database.
-            validate_private_key(self.key)
-        except ValidationError as e:
-            raise SuspiciousOperation(e)
+        # Validate the provided certificate and key pair and test for a mismatch
+        certificate = validate_cert_pair(self.certificate, self.key)
+
         if not self.common_name:
             self.common_name = certificate.get_subject().CN
 
