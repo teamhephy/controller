@@ -1,6 +1,8 @@
+apiVersion: v2
 name: controller
 home: https://github.com/teamhephy/controller
-version: <Will be populated by the ci before publishing the chart>
+version: 2.22.3
 description: Hephy Workflow Controller (API).
 maintainers:
-- email: team@teamhephy.com
+- name: Team Hephy
+  email: team@teamhephy.com
