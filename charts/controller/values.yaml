@@ -71,6 +71,6 @@ global:
   # Valid values are:
   # - true: The deis controller will now create Kubernetes ingress rules for each app, and ingress rules will automatically be created for the controller itself.
   # - false: The default mode, and the default behavior of Deis workflow.
-  native_ingress: false
+  use_native_ingress: false
   # Role-Based Access Control for Kubernetes >= 1.5
   use_rbac: false

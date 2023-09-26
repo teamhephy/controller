@@ -60,7 +60,7 @@ spec:
               value: "127.0.0.1"
             # Environmental variable value for $NATIVE_INGRESS
             - name: "NATIVE_INGRESS"
-              value: "{{ .Values.global.native_ingress }}"
+              value: "{{ .Values.global.use_native_ingress }}"
             - name: "NATIVE_INGRESS_HOSTNAME"
               value: "{{ .Values.platform_domain }}"
             - name: "K8S_API_VERIFY_TLS"
