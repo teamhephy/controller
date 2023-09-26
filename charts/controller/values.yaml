@@ -1,6 +1,6 @@
-org: "deisci"
-pull_policy: "Always"
-docker_tag: canary
+org: "hephy"
+pull_policy: "IfNotPresent"
+docker_tag: v2.22.0
 app_pull_policy: "Always"
 # A comma-separated list of URLs to send app release information to
 # See https://deis.com/docs/workflow/managing-workflow/deploy-hooks
